@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a ThinkQ bug without sharing private device data.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include tokens, device IDs, raw MQTT payloads, addresses, emails, or screenshots with personal device data.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS Version
+      placeholder: "15.5"
+  - type: input
+    id: country
+    attributes:
+      label: ThinQ Country
+      placeholder: "Brazil"
+  - type: textarea
+    id: device
+    attributes:
+      label: Device Family
+      description: Use broad device type only, for example Air Conditioner, Washer, Refrigerator.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps To Reproduce
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized Logs Or Notes
+      description: Remove all personal identifiers before posting.

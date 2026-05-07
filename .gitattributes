@@ -1,0 +1,6 @@
+*.swift text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.toml text eol=lf
+*.png binary
+*.icns binary

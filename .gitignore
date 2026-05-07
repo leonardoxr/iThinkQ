@@ -1,0 +1,17 @@
+.build/
+dist/
+.DS_Store
+*.xcuserstate
+DerivedData/
+*.xcresult
+*.log
+*.pem
+*.p12
+*.key
+*.crt
+.env
+.env.*
+!.env.example
+Package.pins
+/.swiftpm/xcode/
+/.swiftpm/configuration/registries.json
