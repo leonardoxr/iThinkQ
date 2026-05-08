@@ -19,6 +19,17 @@ struct ThinQHTTPClientTests {
 
         #expect(message.deviceID == "device-1")
         #expect(message.isPushNotification)
+        #expect(message.safeDisplaySummary == "A cycle finished.")
+    }
+
+    @Test func liveEventMessageSummarizesStatusUpdatesWithoutPayloadDetails() {
+        let message = LiveEventMessage(
+            topic: "app/clients/sanitized-client/events",
+            payload: #"{"deviceID":"device-1","state":{"temperature":{"target":21},"operation":{"mode":"POWER_ON"}}}"#
+        )
+
+        #expect(message.deviceID == "device-1")
+        #expect(!message.isPushNotification)
         #expect(message.safeDisplaySummary == "Received a device update.")
     }
 }

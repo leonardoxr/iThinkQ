@@ -121,6 +121,23 @@ struct SettingsView: View {
                 default:
                     EmptyView()
                 }
+                LabeledContent("Reportable devices", value: "\(liveEventService.reportableDeviceCount)")
+                LabeledContent("Connection attempts", value: "\(liveEventService.connectionAttempts)")
+                if let connectedAt = liveEventService.connectedAt {
+                    LabeledContent("Connected since", value: connectedAt.formatted(date: .omitted, time: .standard))
+                }
+                if let lastMessageAt = liveEventService.lastMessageAt {
+                    LabeledContent("Last message", value: lastMessageAt.formatted(date: .omitted, time: .standard))
+                }
+                if let lastDisconnectedAt = liveEventService.lastDisconnectedAt {
+                    LabeledContent("Last disconnect", value: lastDisconnectedAt.formatted(date: .omitted, time: .standard))
+                }
+                if let retryAfter = liveEventService.retryAfter {
+                    LabeledContent("Next retry", value: retryAfter.formatted(date: .omitted, time: .standard))
+                }
+                if let nextRenewal = liveEventService.nextSubscriptionRenewalAt {
+                    LabeledContent("Subscription renewal", value: nextRenewal.formatted(date: .omitted, time: .shortened))
+                }
                 Button {
                     Task { await liveEventService.prepare(session: session, devices: deviceStore.devices) }
                 } label: {

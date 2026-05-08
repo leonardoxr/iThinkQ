@@ -40,6 +40,10 @@ struct LiveEventMessage: Identifiable, Hashable, Sendable {
             return "Received an encrypted or non-JSON event."
         }
 
+        if let pushType = json.firstString(for: ["pushType", "type", "eventType", "alertType"]) {
+            return Self.summary(forPushType: pushType)
+        }
+
         if json.firstString(for: ["deviceId", "deviceID", "device_id"]) != nil {
             return "Received a device update."
         }
@@ -49,6 +53,30 @@ struct LiveEventMessage: Identifiable, Hashable, Sendable {
         }
 
         return "Received a ThinQ event."
+    }
+
+    private static func summary(forPushType pushType: String) -> String {
+        let normalized = pushType
+            .replacingOccurrences(of: "_", with: " ")
+            .replacingOccurrences(of: "-", with: " ")
+            .lowercased()
+
+        if normalized.contains("cycle") && (normalized.contains("done") || normalized.contains("complete")) {
+            return "A cycle finished."
+        }
+        if normalized.contains("error") || normalized.contains("fault") {
+            return "The appliance reported an error."
+        }
+        if normalized.contains("filter") {
+            return "Filter attention may be needed."
+        }
+        if normalized.contains("door") {
+            return "Door status changed."
+        }
+        if normalized.contains("energy") {
+            return "Energy usage changed."
+        }
+        return "Received a ThinQ alert."
     }
 }
 
@@ -62,7 +90,8 @@ actor MQTTLiveEventTransport {
         certificatePEM: String,
         privateKeyPEM: String,
         subscriptions: [String],
-        onMessage: @escaping @Sendable (LiveEventMessage) async -> Void
+        onMessage: @escaping @Sendable (LiveEventMessage) async -> Void,
+        onDisconnect: @escaping @Sendable (String?) async -> Void
     ) async throws {
         try await disconnect()
 
@@ -91,16 +120,21 @@ actor MQTTLiveEventTransport {
         _ = try await mqttClient.subscribe(to: subscriptions.map { MQTTSubscribeInfo(topicFilter: $0, qos: .atLeastOnce) })
 
         eventTask = Task {
-            for await result in listener {
+            var disconnectReason: String?
+            listenLoop: for await result in listener {
                 guard !Task.isCancelled else { break }
                 switch result {
                 case .success(let publish):
                     var payloadBuffer = publish.payload
                     let payload = payloadBuffer.readString(length: payloadBuffer.readableBytes) ?? ""
                     await onMessage(LiveEventMessage(topic: publish.topicName, payload: payload))
-                case .failure:
-                    break
+                case .failure(let error):
+                    disconnectReason = error.localizedDescription
+                    break listenLoop
                 }
+            }
+            if !Task.isCancelled {
+                await onDisconnect(disconnectReason)
             }
         }
 
