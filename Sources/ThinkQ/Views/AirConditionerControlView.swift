@@ -43,6 +43,9 @@ struct AirConditionerControlView: View {
         .onChange(of: device.id) { _, _ in
             hydrateState()
         }
+        .onChange(of: deviceStore.statuses[device.id]) { _, _ in
+            hydrateState()
+        }
     }
 
     @ViewBuilder

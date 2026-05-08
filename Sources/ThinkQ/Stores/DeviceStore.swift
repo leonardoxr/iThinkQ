@@ -273,6 +273,7 @@ final class DeviceStore {
 
     func currentNumber(for device: ThinQDevice, role: DeviceControlRole) -> Double? {
         guard role == .temperature else { return nil }
+        guard let status = statuses[device.id] else { return nil }
         let mode = currentText(for: device, role: .mode)?.lowercased() ?? ""
         let preferredKeys: [String]
         if mode.contains("cool") {
@@ -286,16 +287,23 @@ final class DeviceStore {
         } else {
             preferredKeys = ["temperature.targetTemperature", "temperature.coolTargetTemperature", "temperature.autoTargetTemperature"]
         }
-        return statuses[device.id]?.firstNumber(preferredKeys + ["temperatureInUnits[0].targetTemperature"])
+        if let value = status.firstNumber(preferredKeys + ["temperatureInUnits[0].targetTemperature"]) {
+            return value
+        }
+        return status.firstNumber(matchingKeySuffixes: ["targettemperature"])
     }
 
     func roomTemperature(for device: ThinQDevice) -> Double? {
-        statuses[device.id]?.firstNumber(
+        guard let status = statuses[device.id] else { return nil }
+        if let value = status.firstNumber(
             "temperature.currentTemperature",
             "temperature.roomTemperature",
             "temperature.indoorTemperature",
             "temperatureInUnits[0].currentTemperature"
-        )
+        ) {
+            return value
+        }
+        return status.firstNumber(matchingKeySuffixes: ["currenttemperature", "roomtemperature", "indoortemperature"])
     }
 
     func sidebarTemperatureText(for device: ThinQDevice) -> String? {

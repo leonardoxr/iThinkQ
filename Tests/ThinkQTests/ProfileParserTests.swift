@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import ThinkQ
 
@@ -100,6 +101,17 @@ struct ProfileParserTests {
         #expect(values["temperature.currentTemperature"]?.displayText == "24")
         #expect(values["airFlow.rotateUpDown"]?.displayText == "On")
         #expect(values["airFlow.vanePosition"]?.displayText == "AUTO")
+    }
+
+    @Test func statusFindsTemperatureValuesBySuffixFallback() {
+        let status = DeviceStatus(values: [
+            "temperatureInUnits[0].currentTemperature": .number(23.5),
+            "temperatureInUnits[0].targetTemperature": .number(22),
+            "temperatureInUnits[1].currentTemperature": .number(75)
+        ], updatedAt: Date())
+
+        #expect(status.firstNumber(matchingKeySuffixes: ["currenttemperature"]) == 23.5)
+        #expect(status.firstNumber(matchingKeySuffixes: ["targettemperature"]) == 22)
     }
 
     @Test func parsesSanitizedLaundryFixture() throws {

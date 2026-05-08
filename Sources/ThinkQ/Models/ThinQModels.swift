@@ -146,6 +146,17 @@ struct DeviceStatus: Codable, Hashable, Sendable {
         }
         return nil
     }
+
+    func firstNumber(matchingKeySuffixes suffixes: [String]) -> Double? {
+        let normalizedSuffixes = suffixes.map { $0.lowercased() }
+        let matches = values.keys
+            .filter { key in
+                let normalized = key.lowercased()
+                return normalizedSuffixes.contains { normalized.hasSuffix($0) }
+            }
+            .sorted()
+        return firstNumber(matches)
+    }
 }
 
 struct DeviceProfile: Codable, Hashable, Sendable {

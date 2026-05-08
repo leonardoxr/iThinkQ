@@ -75,7 +75,7 @@ struct SidebarQuickControls: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            if hasTemperatureControl, listingStatus.isOnline, listingStatus.isPoweredOn {
+            if hasTemperatureControl, listingStatus.isOnline, listingStatus.isPoweredOn, temperatureText != "--" {
                 Button {
                     Task { await deviceStore.adjustTemperature(for: device, delta: -1, session: session) }
                 } label: {
