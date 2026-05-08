@@ -140,29 +140,42 @@ struct AirConditionerControlView: View {
     @ViewBuilder
     private var temperatureCard: some View {
         if let capability = capability(for: .temperature), let range = capability.range {
-            AirControlCard(title: "Target Temperature", subtitle: "Set the room temperature the unit should maintain.", symbol: "thermometer") {
+            let canAdjust = deviceStore.canAdjustTemperature(for: device)
+            AirControlCard(
+                title: canAdjust ? "Target Temperature" : "Room Temperature",
+                subtitle: canAdjust ? "Set the room temperature the unit should maintain." : "The unit is off. Turn it on to change the target temperature.",
+                symbol: "thermometer"
+            ) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .center) {
-                        Text(formattedNumber(temperatureValue))
+                        Text(formattedNumber(canAdjust ? temperatureValue : roomTemperatureValue))
                             .font(.system(size: 42, weight: .bold, design: .rounded))
                             .monospacedDigit()
                         Text(capability.unit ?? "°C")
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(.secondary)
-                        Spacer()
-                        Stepper("Temperature", value: $temperatureValue, in: range.min...range.max, step: range.step)
-                            .labelsHidden()
-                            .controlSize(.large)
+                        if canAdjust {
+                            Spacer()
+                            Stepper("Temperature", value: $temperatureValue, in: range.min...range.max, step: range.step)
+                                .labelsHidden()
+                                .controlSize(.large)
+                        }
                     }
 
-                    Slider(value: $temperatureValue, in: range.min...range.max, step: range.step)
+                    if canAdjust {
+                        Slider(value: $temperatureValue, in: range.min...range.max, step: range.step)
 
-                    Button {
-                        preview(capability, value: .number(temperatureValue), title: "Target Temperature", highRisk: false)
-                    } label: {
-                        Label("Set Temperature", systemImage: "checkmark.circle")
+                        Button {
+                            preview(capability, value: .number(temperatureValue), title: "Target Temperature", highRisk: false)
+                        } label: {
+                            Label("Set Temperature", systemImage: "checkmark.circle")
+                        }
+                        .controlSize(.large)
+                    } else {
+                        Label("Target controls are hidden while the AC is off.", systemImage: "power.circle")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
                     }
-                    .controlSize(.large)
                 }
             }
         }
@@ -272,8 +285,11 @@ struct AirConditionerControlView: View {
     }
 
     private var isPoweredOn: Bool {
-        let value = deviceStore.currentText(for: device, role: .power)?.uppercased() ?? ""
-        return !value.contains("OFF")
+        deviceStore.isPoweredOn(for: device)
+    }
+
+    private var roomTemperatureValue: Double {
+        deviceStore.roomTemperature(for: device) ?? temperatureValue
     }
 
     private func capability(for role: DeviceControlRole) -> DeviceCapability? {

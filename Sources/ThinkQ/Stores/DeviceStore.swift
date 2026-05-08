@@ -86,8 +86,8 @@ final class DeviceStore {
         let power = currentText(for: device, role: .power)
         let mode = currentText(for: device, role: .mode)
         let fan = currentText(for: device, role: .fan)
-        let temperature = currentNumber(for: device, role: .temperature)
-        let isPoweredOn = !(power ?? "").uppercased().contains("OFF")
+        let isPoweredOn = Self.powerState(from: power)
+        let temperature = device.type == .airConditioner && !isPoweredOn ? roomTemperature(for: device) : currentNumber(for: device, role: .temperature)
         let title = isPoweredOn ? "On" : "Off"
 
         var detailParts: [String] = []
@@ -95,7 +95,7 @@ final class DeviceStore {
             detailParts.append(mode.thinkQTitleCasedValue)
         }
         if let temperature {
-            detailParts.append("\(Int(temperature))°")
+            detailParts.append(device.type == .airConditioner && !isPoweredOn ? "Room \(Int(temperature))°" : "\(Int(temperature))°")
         }
         if let fan, device.type == .airConditioner {
             detailParts.append(fan.thinkQTitleCasedValue)
@@ -299,12 +299,27 @@ final class DeviceStore {
     }
 
     func sidebarTemperatureText(for device: ThinQDevice) -> String? {
+        if device.type == .airConditioner, !isPoweredOn(for: device) {
+            guard let value = roomTemperature(for: device) else { return nil }
+            return "Room \(Int(value))°"
+        }
         if statuses[device.id]?.isAvailable == false {
             guard let value = roomTemperature(for: device) else { return nil }
             return "Room \(Int(value))°"
         }
         guard let value = currentNumber(for: device, role: .temperature) else { return nil }
         return "\(Int(value))°"
+    }
+
+    func isPoweredOn(for device: ThinQDevice) -> Bool {
+        Self.powerState(from: currentText(for: device, role: .power))
+    }
+
+    func canAdjustTemperature(for device: ThinQDevice) -> Bool {
+        guard device.type == .airConditioner else {
+            return canSendQuickControl(.temperature, for: device)
+        }
+        return isPoweredOn(for: device) && canSendQuickControl(.temperature, for: device)
     }
 
     func currentText(for device: ThinQDevice, role: DeviceControlRole) -> String? {
@@ -360,6 +375,7 @@ final class DeviceStore {
     }
 
     func adjustTemperature(for device: ThinQDevice, delta: Double, session: ThinQSessionStore) async {
+        guard canAdjustTemperature(for: device) else { return }
         guard let capability = primaryCapability(.temperature, for: device),
               let range = capability.range
         else { return }
@@ -372,6 +388,14 @@ final class DeviceStore {
     func sendEnumQuickControl(_ role: DeviceControlRole, value: String, for device: ThinQDevice, session: ThinQSessionStore) async {
         guard let capability = primaryCapability(role, for: device) else { return }
         await send(capability: capability, value: .string(value), device: device, session: session)
+    }
+
+    private static func powerState(from value: String?) -> Bool {
+        let normalized = (value ?? "").uppercased()
+        if normalized.contains("OFF") || normalized == "STOP" {
+            return false
+        }
+        return true
     }
 
     func startPolling(session: ThinQSessionStore) {

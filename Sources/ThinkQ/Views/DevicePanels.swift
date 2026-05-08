@@ -6,7 +6,7 @@ struct ClimatePanel: View {
     var body: some View {
         PanelGrid {
             GaugeCard(title: "Room", value: status?.firstNumber("temperature.currentTemperature", "temperatureInUnits[0].currentTemperature"), fallback: "Waiting for sensor", range: 0...40, unit: unit, tint: .cyan)
-            GaugeCard(title: "Target", value: status?.firstNumber(["temperature.targetTemperature", "temperature.coolTargetTemperature", "temperature.autoTargetTemperature", "temperatureInUnits[0].targetTemperature"]), fallback: "No target shared", range: 16...30, unit: unit, tint: .orange)
+            GaugeCard(title: isPoweredOn ? "Target" : "Room", value: displayedTemperature, fallback: isPoweredOn ? "No target shared" : "Waiting for sensor", range: isPoweredOn ? 16...30 : 0...40, unit: unit, tint: isPoweredOn ? .orange : .cyan)
             AirflowCard(strength: status?.firstText("airFlow.windStrengthDetail", "airFlow.windStrength"))
             MetricCard(title: "Mode", value: status?.firstText("operation.airConOperationMode", "airConJobMode.currentJobMode")?.thinkQTitleCasedValue ?? "Waiting for status", symbol: "power", tint: status?.isAvailable == false ? .orange : .green)
         }
@@ -14,6 +14,18 @@ struct ClimatePanel: View {
 
     private var unit: String {
         status?.firstText("temperature.unit", "temperatureInUnits[0].unit") ?? "°C"
+    }
+
+    private var isPoweredOn: Bool {
+        let value = status?.firstText("operation.airConOperationMode", "operation.mode", "runState.currentState")?.uppercased() ?? ""
+        return !value.contains("OFF")
+    }
+
+    private var displayedTemperature: Double? {
+        if !isPoweredOn {
+            return status?.firstNumber("temperature.currentTemperature", "temperature.roomTemperature", "temperature.indoorTemperature", "temperatureInUnits[0].currentTemperature")
+        }
+        return status?.firstNumber(["temperature.targetTemperature", "temperature.coolTargetTemperature", "temperature.autoTargetTemperature", "temperatureInUnits[0].targetTemperature"])
     }
 }
 

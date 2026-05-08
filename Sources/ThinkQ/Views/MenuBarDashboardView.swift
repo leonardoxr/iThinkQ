@@ -155,7 +155,7 @@ struct MenuBarDeviceRow: View {
                     ProgressView()
                         .controlSize(.small)
                         .help("Sending temperature command")
-                } else if deviceStore.primaryCapability(.temperature, for: device) != nil, listingStatus.isOnline {
+                } else if deviceStore.primaryCapability(.temperature, for: device) != nil, listingStatus.isOnline, listingStatus.isPoweredOn {
                     Button {
                         Task { await deviceStore.adjustTemperature(for: device, delta: -1, session: session) }
                     } label: {
