@@ -154,7 +154,7 @@ struct MenuBarDeviceRow: View {
                     .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
                 }
 
-                if deviceStore.primaryCapability(.temperature, for: device) != nil {
+                if deviceStore.primaryCapability(.temperature, for: device) != nil, listingStatus.isOnline {
                     Button {
                         Task { await deviceStore.adjustTemperature(for: device, delta: -1, session: session) }
                     } label: {
@@ -163,7 +163,7 @@ struct MenuBarDeviceRow: View {
                     .disabled(!deviceStore.canSendQuickControl(.temperature, for: device))
                     .help("Lower temperature")
 
-                    Text(temperatureText)
+                    Text(temperatureText ?? "--")
                         .font(.caption.monospacedDigit())
                         .frame(minWidth: 42)
 
@@ -174,6 +174,12 @@ struct MenuBarDeviceRow: View {
                     }
                     .disabled(!deviceStore.canSendQuickControl(.temperature, for: device))
                     .help("Raise temperature")
+                } else if device.type == .airConditioner, let temperatureText {
+                    Text(temperatureText)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(minWidth: 58, alignment: .leading)
+                        .help("Last known room temperature")
                 }
 
                 Spacer()
@@ -216,11 +222,8 @@ struct MenuBarDeviceRow: View {
         listingStatus.isPoweredOn
     }
 
-    private var temperatureText: String {
-        if let value = deviceStore.currentNumber(for: device, role: .temperature) {
-            return "\(Int(value))°"
-        }
-        return "--"
+    private var temperatureText: String? {
+        deviceStore.sidebarTemperatureText(for: device)
     }
 
     private func openDevice() {

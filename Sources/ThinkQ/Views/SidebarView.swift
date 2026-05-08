@@ -75,7 +75,7 @@ struct SidebarQuickControls: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            if hasTemperatureControl {
+            if hasTemperatureControl, listingStatus.isOnline {
                 Button {
                     Task { await deviceStore.adjustTemperature(for: device, delta: -1, session: session) }
                 } label: {
@@ -94,6 +94,12 @@ struct SidebarQuickControls: View {
                     Image(systemName: "plus")
                 }
                 .help("Raise temperature")
+            } else if device.type == .airConditioner {
+                Text(temperatureText)
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 48, alignment: .trailing)
+                    .help("Last known room temperature")
             }
 
             if hasPowerControl {
@@ -113,7 +119,6 @@ struct SidebarQuickControls: View {
         }
         .buttonStyle(.borderless)
         .controlSize(.small)
-        .disabled(!listingStatus.isOnline)
     }
 
     private var hasPowerControl: Bool {
@@ -125,10 +130,7 @@ struct SidebarQuickControls: View {
     }
 
     private var temperatureText: String {
-        if let value = deviceStore.currentNumber(for: device, role: .temperature) {
-            return "\(Int(value))°"
-        }
-        return "--"
+        deviceStore.sidebarTemperatureText(for: device) ?? "--"
     }
 }
 

@@ -289,6 +289,24 @@ final class DeviceStore {
         return statuses[device.id]?.firstNumber(preferredKeys + ["temperatureInUnits[0].targetTemperature"])
     }
 
+    func roomTemperature(for device: ThinQDevice) -> Double? {
+        statuses[device.id]?.firstNumber(
+            "temperature.currentTemperature",
+            "temperature.roomTemperature",
+            "temperature.indoorTemperature",
+            "temperatureInUnits[0].currentTemperature"
+        )
+    }
+
+    func sidebarTemperatureText(for device: ThinQDevice) -> String? {
+        if statuses[device.id]?.isAvailable == false {
+            guard let value = roomTemperature(for: device) else { return nil }
+            return "Room \(Int(value))°"
+        }
+        guard let value = currentNumber(for: device, role: .temperature) else { return nil }
+        return "\(Int(value))°"
+    }
+
     func currentText(for device: ThinQDevice, role: DeviceControlRole) -> String? {
         switch role {
         case .power:

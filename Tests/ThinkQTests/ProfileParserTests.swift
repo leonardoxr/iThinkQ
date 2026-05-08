@@ -97,6 +97,7 @@ struct ProfileParserTests {
 
         #expect(values["operation.airConOperationMode"]?.displayText == "POWER_ON")
         #expect(values["temperature.targetTemperature"]?.displayText == "22")
+        #expect(values["temperature.currentTemperature"]?.displayText == "24")
         #expect(values["airFlow.rotateUpDown"]?.displayText == "On")
         #expect(values["airFlow.vanePosition"]?.displayText == "AUTO")
     }
