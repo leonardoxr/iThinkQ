@@ -28,8 +28,8 @@ Screenshots are intentionally not committed yet because the UI is changing quick
 
 ## Requirements
 
-- macOS 15 or newer
-- Xcode command line tools or Xcode with Swift 6 toolchain
+- macOS 14 or newer
+- Xcode command line tools or Xcode with Swift 6.3 toolchain
 - LG ThinQ Personal Access Token
 
 ## Getting A ThinQ Token
@@ -76,7 +76,7 @@ This creates a zip under `dist/` from the locally built app bundle. Public relea
 - `Models/` ThinQ domain types, JSON wrappers, API errors, region mapping
 - `Services/` HTTP client, profile parser, control validation, Keychain, MQTT, certificates
 - `Stores/` observable app state, session, device refresh/cache/customization
-- `Support/` logging, API references, display helpers, shared glass styling
+- `Support/` logging, API references, display helpers, shared adaptive glass styling
 - `Views/` SwiftUI windows, settings, onboarding, sidebar, device panels, menu bar UI
 
 ## Privacy And Safety

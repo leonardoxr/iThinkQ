@@ -6,13 +6,20 @@ struct ThinkQGlassSurface: ViewModifier {
     var isInteractive = false
 
     func body(content: Content) -> some View {
-        content
-            .background(material, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(.quaternary, lineWidth: 0.5)
-            }
-            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(isInteractive ? .regular.interactive() : .regular, in: shape)
+                .contentShape(shape)
+        } else {
+            content
+                .background(material, in: shape)
+                .overlay {
+                    shape
+                        .strokeBorder(.quaternary, lineWidth: 0.5)
+                }
+                .contentShape(shape)
+        }
     }
 }
 

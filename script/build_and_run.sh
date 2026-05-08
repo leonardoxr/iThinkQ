@@ -4,7 +4,7 @@ set -euo pipefail
 MODE="${1:-build}"
 APP_NAME="ThinkQ"
 BUNDLE_ID="com.xavier.thinkq"
-MIN_SYSTEM_VERSION="15.0"
+MIN_SYSTEM_VERSION="14.0"
 DEFAULT_SIGN_IDENTITY="ThinkQ Local Development"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
