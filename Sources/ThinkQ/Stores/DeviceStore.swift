@@ -461,7 +461,11 @@ final class DeviceStore {
         if case .object(let object) = stateCandidate {
             let flattened = DeviceProfileParser.flattenStatus(object)
             if !flattened.isEmpty {
-                statuses[deviceID] = DeviceStatus(values: flattened, updatedAt: message.receivedAt)
+                var mergedValues = statuses[deviceID]?.values ?? [:]
+                for (key, value) in flattened {
+                    mergedValues[key] = value
+                }
+                statuses[deviceID] = DeviceStatus(values: mergedValues, updatedAt: message.receivedAt)
                 lastLiveEventSummary = "Updated \(devices.first { $0.id == deviceID }?.displayName ?? "device") from live event"
                 AppLog.sync.info("Applied live event for device")
             }
