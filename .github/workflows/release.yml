@@ -21,8 +21,14 @@ jobs:
           THINKQ_RELEASE_VERSION: ${{ github.ref_name }}
 
       - name: Upload release asset
-        uses: softprops/action-gh-release@v2
-        with:
-          prerelease: true
-          fail_on_unmatched_files: true
-          files: dist/ThinkQ-${{ github.ref_name }}-macos.zip
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/ThinkQ-${GITHUB_REF_NAME}-macos.zip" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "ThinkQ ${GITHUB_REF_NAME}" \
+            --notes "Automated heavily WIP prerelease build for ${GITHUB_REF_NAME}. This app is not notarized yet and remains experimental." \
+            --prerelease \
+            --latest=false \
+            --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
