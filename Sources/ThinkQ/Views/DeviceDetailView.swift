@@ -35,6 +35,24 @@ struct DeviceDetailView: View {
                         .thinkQGlassSurface()
                 }
 
+                if deviceStore.isDeviceCommandPending(device) {
+                    HStack(spacing: 12) {
+                        ProgressView()
+                            .controlSize(.small)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Waiting for LG")
+                                .font(.headline)
+                            Text("Command sent. Controls are paused until ThinkQ receives the updated device state.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .thinkQGlassSurface()
+                }
+
                 DeviceHeroView(device: device, status: status)
                 DeviceCustomizationView(device: device, aliasDraft: $aliasDraft, symbolDraft: $symbolDraft, accentDraft: $accentDraft)
                 DevicePrimaryPanel(device: device, profile: profile, status: status)

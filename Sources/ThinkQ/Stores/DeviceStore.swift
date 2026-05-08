@@ -30,6 +30,8 @@ final class DeviceStore {
     var state: LoadState = .idle
     var lastSync: Date?
     var pendingControlIDs: Set<String> = []
+    var pendingDeviceCommandIDs: Set<ThinQDevice.ID> = []
+    var pendingDeviceCommandStartedAt: [ThinQDevice.ID: Date] = [:]
     var syncIssues: [DeviceSyncIssue] = []
     var lastControlError: String?
     var lastLiveEventSummary: String?
@@ -356,11 +358,22 @@ final class DeviceStore {
     func canSendQuickControl(_ role: DeviceControlRole, for device: ThinQDevice) -> Bool {
         guard let capability = primaryCapability(role, for: device) else { return false }
         guard statuses[device.id]?.isAvailable ?? true else { return false }
+        guard !isDeviceCommandPending(device) else { return false }
         return !pendingControlIDs.contains(controlKey(deviceID: device.id, capabilityID: capability.id))
+    }
+
+    func canSendControl(_ capability: DeviceCapability, for device: ThinQDevice) -> Bool {
+        guard statuses[device.id]?.isAvailable ?? true else { return false }
+        guard !isDeviceCommandPending(device) else { return false }
+        return !isControlPending(capability, for: device)
     }
 
     func isControlPending(_ capability: DeviceCapability, for device: ThinQDevice) -> Bool {
         pendingControlIDs.contains(controlKey(deviceID: device.id, capabilityID: capability.id))
+    }
+
+    func isDeviceCommandPending(_ device: ThinQDevice) -> Bool {
+        pendingDeviceCommandIDs.contains(device.id)
     }
 
     func pendingQuickControl(_ role: DeviceControlRole, for device: ThinQDevice) -> Bool {
@@ -375,6 +388,9 @@ final class DeviceStore {
         }
         if statuses[device.id]?.isAvailable == false {
             return "Device is offline."
+        }
+        if isDeviceCommandPending(device) {
+            return "Waiting for LG to confirm the last command."
         }
         if pendingQuickControl(role, for: device) {
             return "Command is still being sent."
@@ -453,6 +469,10 @@ final class DeviceStore {
     }
 
     func send(capability: DeviceCapability, value: ThinQJSON, device: ThinQDevice, session: ThinQSessionStore) async {
+        guard !isDeviceCommandPending(device) else {
+            lastControlError = "Wait for LG to confirm the current command before sending another one."
+            return
+        }
         guard statuses[device.id]?.isAvailable ?? true else {
             lastControlError = statuses[device.id]?.unavailableReason ?? "Device is unavailable."
             return
@@ -463,7 +483,13 @@ final class DeviceStore {
             let command = try controlEngine.command(deviceID: device.id, capability: capability, value: value)
             let pendingID = controlKey(deviceID: device.id, capabilityID: capability.id)
             pendingControlIDs.insert(pendingID)
-            defer { pendingControlIDs.remove(pendingID) }
+            pendingDeviceCommandIDs.insert(device.id)
+            pendingDeviceCommandStartedAt[device.id] = Date()
+            defer {
+                pendingControlIDs.remove(pendingID)
+                pendingDeviceCommandIDs.remove(device.id)
+                pendingDeviceCommandStartedAt[device.id] = nil
+            }
             lastControlError = nil
             AppLog.control.info("Sending control \(capability.id, privacy: .public)")
             try await client.sendControl(command, session: snapshot)

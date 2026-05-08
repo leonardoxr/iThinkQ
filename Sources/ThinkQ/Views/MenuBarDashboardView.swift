@@ -132,11 +132,22 @@ struct MenuBarDeviceRow: View {
                 }
                 .buttonStyle(.plain)
 
+                if deviceStore.isDeviceCommandPending(device) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .help("Waiting for LG to confirm the command")
+                }
+
                 powerControl
             }
 
             HStack(spacing: 8) {
-                if deviceStore.pendingQuickControl(.power, for: device) {
+                if deviceStore.isDeviceCommandPending(device) {
+                    Label("Waiting", systemImage: "hourglass")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .help("Controls are paused until LG returns the updated state.")
+                } else if deviceStore.pendingQuickControl(.power, for: device) {
                     ProgressView()
                         .controlSize(.small)
                         .help("Sending power command")

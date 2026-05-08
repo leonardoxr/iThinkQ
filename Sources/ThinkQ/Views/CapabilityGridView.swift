@@ -80,12 +80,16 @@ struct CapabilityControlView: View {
             }
 
             control
-                .disabled(!(deviceStore.statuses[device.id]?.isAvailable ?? true))
+                .disabled(!deviceStore.canSendControl(capability, for: device))
 
             if let reason = deviceStore.statuses[device.id]?.unavailableReason {
                 Label(reason, systemImage: "exclamationmark.triangle")
                     .font(.caption)
                     .foregroundStyle(.orange)
+            } else if deviceStore.isDeviceCommandPending(device) {
+                Label("Waiting for LG to confirm the last command.", systemImage: "hourglass")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding()

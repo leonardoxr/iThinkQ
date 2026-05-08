@@ -28,7 +28,16 @@ struct AirConditionerControlView: View {
             boolOrEnumCard(role: .light, title: "Display Light", symbol: "lightbulb", fallback: "Turn the unit display light on or off.")
             boolOrEnumCard(role: .energy, title: "Energy Saver", symbol: "bolt", fallback: "Reduce power use when the room is already comfortable.")
         }
-        .disabled(isUnavailable)
+        .disabled(isUnavailable || deviceStore.isDeviceCommandPending(device))
+        .overlay(alignment: .topTrailing) {
+            if deviceStore.isDeviceCommandPending(device) {
+                Label("Waiting for LG", systemImage: "hourglass")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.regularMaterial, in: Capsule())
+            }
+        }
         .confirmationDialog("Send Air Conditioner Command?", isPresented: $showingConfirmation, titleVisibility: .visible) {
             Button("Apply", role: commandDraft?.isHighRisk == true ? .destructive : nil) {
                 if let commandDraft {
@@ -124,7 +133,7 @@ struct AirConditionerControlView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .tint(isPoweredOn ? .green : .secondary)
-                    .disabled(powerValue(on: true, capability: capability) == nil)
+                    .disabled(powerValue(on: true, capability: capability) == nil || deviceStore.isDeviceCommandPending(device))
 
                     Button {
                         preview(capability, value: .string(powerValue(on: false, capability: capability) ?? "POWER_OFF"), title: "Power", highRisk: true)
@@ -133,7 +142,7 @@ struct AirConditionerControlView: View {
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
-                    .disabled(powerValue(on: false, capability: capability) == nil)
+                    .disabled(powerValue(on: false, capability: capability) == nil || deviceStore.isDeviceCommandPending(device))
                 }
                 .frame(minHeight: 44, alignment: .leading)
             }

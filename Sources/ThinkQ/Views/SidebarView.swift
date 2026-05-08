@@ -55,6 +55,11 @@ struct DeviceSidebarRow: View {
                     .lineLimit(1)
             }
             Spacer()
+            if deviceStore.isDeviceCommandPending(device) {
+                ProgressView()
+                    .controlSize(.small)
+                    .help("Waiting for LG to confirm the command")
+            }
             SidebarQuickControls(device: device, listingStatus: listingStatus)
             if device.isFavorite {
                 Image(systemName: "star.fill")
@@ -81,6 +86,7 @@ struct SidebarQuickControls: View {
                 } label: {
                     Image(systemName: "minus")
                 }
+                .disabled(deviceStore.isDeviceCommandPending(device))
                 .help("Lower temperature")
 
                 Text(temperatureText)
@@ -93,6 +99,7 @@ struct SidebarQuickControls: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .disabled(deviceStore.isDeviceCommandPending(device))
                 .help("Raise temperature")
             } else if device.type == .airConditioner {
                 Text(temperatureText)
@@ -109,6 +116,7 @@ struct SidebarQuickControls: View {
                     Image(systemName: listingStatus.isPoweredOn ? "power.circle.fill" : "power.circle")
                 }
                 .foregroundStyle(listingStatus.tint)
+                .disabled(deviceStore.isDeviceCommandPending(device))
                 .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
             } else {
                 Label(listingStatus.title, systemImage: listingStatus.symbol)
