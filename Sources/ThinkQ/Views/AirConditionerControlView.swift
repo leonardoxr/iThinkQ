@@ -15,7 +15,7 @@ struct AirConditionerControlView: View {
     @State private var showingConfirmation = false
 
     private let columns = [
-        GridItem(.adaptive(minimum: 340, maximum: 520), spacing: 16)
+        GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 16)
     ]
 
     var body: some View {
@@ -132,7 +132,7 @@ struct AirConditionerControlView: View {
                     .controlSize(.large)
                     .disabled(powerValue(on: false, capability: capability) == nil)
                 }
-                .frame(height: 44, alignment: .leading)
+                .frame(minHeight: 44, alignment: .leading)
             }
         }
     }
@@ -256,10 +256,14 @@ struct AirConditionerControlView: View {
 
     private func missingCard(title: String, subtitle: String, symbol: String) -> some View {
         AirControlCard(title: title, subtitle: subtitle, symbol: symbol) {
-            Label("Not available on this unit", systemImage: "minus.circle")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(height: 44, alignment: .leading)
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Not available on this unit", systemImage: "minus.circle")
+                    .font(.caption.weight(.semibold))
+                Text(unavailableHint(for: title))
+                    .font(.caption2)
+            }
+            .foregroundStyle(.secondary)
+            .frame(minHeight: 44, alignment: .leading)
         }
     }
 
@@ -363,6 +367,17 @@ struct AirConditionerControlView: View {
         return 2
     }
 
+    private func unavailableHint(for title: String) -> String {
+        switch title {
+        case "Air Direction":
+            "This profile did not expose swing or vane positioning as writable."
+        case "Fan":
+            "This profile did not expose fan speed or pattern controls."
+        default:
+            "ThinkQ will show it here when LG exposes a writable capability."
+        }
+    }
+
     private var commandPreview: String {
         guard let commandDraft else { return "ThinkQ will send this command." }
         return "\(device.displayName) will set \(commandDraft.title.lowercased()) to \(commandDraft.value.displayText.thinkQTitleCasedValue)."
@@ -412,10 +427,10 @@ private struct AirControlCard<Content: View>: View {
             Spacer(minLength: 10)
 
             content
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
         }
         .padding()
-        .frame(maxWidth: .infinity, minHeight: 190, maxHeight: 190, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 214, alignment: .topLeading)
         .thinkQGlassSurface(interactive: true)
     }
 }
@@ -445,7 +460,7 @@ private struct LabeledControlRow<Content: View>: View {
             content
             Spacer(minLength: 0)
         }
-        .frame(height: 44)
+        .frame(minHeight: 44)
     }
 }
 
