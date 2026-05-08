@@ -16,7 +16,7 @@ struct ThinkQApp: App {
     }
 
     var body: some Scene {
-        WindowGroup("ThinkQ", id: "main") {
+        Window("ThinkQ", id: "main") {
             ContentView()
                 .environment(session)
                 .environment(deviceStore)
@@ -84,7 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor
     @objc func showMainWindowFromMenuBar() {
         NSApp.setActivationPolicy(.regular)
-        for window in NSApp.windows where window.canBecomeMain {
+        for window in NSApp.windows where window.canBecomeMain && window.title == "ThinkQ" {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return

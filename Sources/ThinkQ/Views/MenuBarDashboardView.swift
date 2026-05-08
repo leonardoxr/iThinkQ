@@ -84,14 +84,7 @@ struct MenuBarDashboardView: View {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         openWindow(id: "main")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if let window = NSApp.windows.first(where: { $0.title == "ThinkQ" || $0.identifier?.rawValue == "main" }) {
-                window.makeKeyAndOrderFront(nil)
-                NSApp.activate(ignoringOtherApps: true)
-            } else {
-                NSApp.sendAction(#selector(AppDelegate.showMainWindowFromMenuBar), to: nil, from: nil)
-            }
-        }
+        NSApp.sendAction(#selector(AppDelegate.showMainWindowFromMenuBar), to: nil, from: nil)
     }
 
     private func openSettingsWindow() {
@@ -231,6 +224,7 @@ struct MenuBarDeviceRow: View {
         NSApp.activate(ignoringOtherApps: true)
         deviceStore.selection = device.id
         openWindow(id: "main")
+        NSApp.sendAction(#selector(AppDelegate.showMainWindowFromMenuBar), to: nil, from: nil)
         AppLog.menuBar.info("Opened device from menu bar")
     }
 
