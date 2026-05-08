@@ -133,11 +133,11 @@ struct PanelGrid<Content: View>: View {
     @ViewBuilder var content: Content
 
     private let columns = [
-        GridItem(.adaptive(minimum: 210, maximum: 280), spacing: 16)
+        GridItem(.adaptive(minimum: 190, maximum: 250), spacing: 14)
     ]
 
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 16) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
             content
         }
     }
@@ -167,7 +167,7 @@ struct GaugeCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 160)
+        .frame(maxWidth: .infinity, minHeight: 142)
         .padding()
         .thinkQGlassSurface()
     }
@@ -197,7 +197,7 @@ struct AirflowCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 160)
+        .frame(maxWidth: .infinity, minHeight: 142)
         .padding()
         .thinkQGlassSurface()
     }
@@ -210,11 +210,11 @@ struct MetricCard: View {
     let tint: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             Image(systemName: symbol)
                 .font(.title)
                 .foregroundStyle(tint)
-            Spacer()
+            Spacer(minLength: 8)
             Text(value)
                 .font(.title2.bold())
                 .lineLimit(1)
@@ -223,7 +223,7 @@ struct MetricCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 160, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 142, alignment: .leading)
         .padding()
         .thinkQGlassSurface()
     }

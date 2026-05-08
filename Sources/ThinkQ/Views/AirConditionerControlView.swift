@@ -15,11 +15,11 @@ struct AirConditionerControlView: View {
     @State private var showingConfirmation = false
 
     private let columns = [
-        GridItem(.adaptive(minimum: 360, maximum: 520), spacing: 16)
+        GridItem(.adaptive(minimum: 280, maximum: 360), spacing: 12)
     ]
 
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 16) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
             powerCard
             temperatureCard
             enumCard(role: .mode, title: "Mode", symbol: "dial.medium", fallback: "Cooling, dry, fan, or auto operation.")
@@ -434,7 +434,7 @@ private struct AirControlCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: symbol)
                     .font(.title3)
@@ -450,15 +450,12 @@ private struct AirControlCard<Content: View>: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .frame(height: 48, alignment: .topLeading)
-
-            Spacer(minLength: 10)
 
             content
-                .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
-        .frame(maxWidth: .infinity, minHeight: 214, alignment: .topLeading)
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .thinkQGlassSurface(interactive: true)
     }
 }
@@ -473,20 +470,14 @@ private struct LabeledControlRow<Content: View>: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             if let title {
                 Text(title)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                    .frame(width: 88, alignment: .leading)
-            } else {
-                Spacer()
-                    .frame(width: 88)
-                    .accessibilityHidden(true)
             }
 
             content
-            Spacer(minLength: 0)
         }
         .frame(minHeight: 44)
     }
@@ -509,7 +500,7 @@ private struct EnumApplyControl: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .controlSize(.large)
-            .frame(width: 150)
+            .frame(minWidth: 130, maxWidth: 160)
 
             Button {
                 guard !selection.isEmpty else { return }
@@ -518,8 +509,9 @@ private struct EnumApplyControl: View {
                 Label(applyTitle, systemImage: "checkmark.circle")
             }
             .controlSize(.large)
-            .frame(width: 128)
+            .frame(minWidth: 112, maxWidth: 132)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -538,7 +530,7 @@ private struct RangeApplyControl: View {
                     .frame(width: 64, alignment: .leading)
             }
             .controlSize(.large)
-            .frame(width: 150)
+            .frame(minWidth: 130, maxWidth: 160)
 
             Button {
                 preview(value)
@@ -546,8 +538,9 @@ private struct RangeApplyControl: View {
                 Label(applyTitle, systemImage: "checkmark.circle")
             }
             .controlSize(.large)
-            .frame(width: 128)
+            .frame(minWidth: 112, maxWidth: 132)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var unitSuffix: String {

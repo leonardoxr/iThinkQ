@@ -59,8 +59,9 @@ struct DeviceDetailView: View {
                 CapabilityGridView(device: device, capabilities: profile?.writableCapabilities ?? [])
                 StatusInspectorView(status: status, profile: profile)
             }
-            .padding(24)
-            .frame(maxWidth: 1040, alignment: .leading)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .frame(maxWidth: 1120, alignment: .leading)
         }
         .navigationTitle(device.displayName)
         .onAppear {
