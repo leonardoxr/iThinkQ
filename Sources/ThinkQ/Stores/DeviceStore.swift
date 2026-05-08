@@ -159,6 +159,7 @@ final class DeviceStore {
                 AppLog.sync.info("Fetching ThinQ device list")
                 let fetchedDevices = try await client.fetchDevices(session: snapshot)
                 devices = fetchedDevices.map { customizationStore.apply(to: $0) }
+                pruneRemovedDeviceState()
             } else {
                 AppLog.cache.info("Using cached device list")
             }
@@ -603,6 +604,21 @@ final class DeviceStore {
         return message.contains("not provided feature")
             || message.contains("unsupported feature")
             || message.contains("not supported")
+    }
+
+    private func pruneRemovedDeviceState() {
+        let activeIDs = Set(devices.map(\.id))
+        profiles = profiles.filter { activeIDs.contains($0.key) }
+        statuses = statuses.filter { activeIDs.contains($0.key) }
+        profileBackoffUntil = profileBackoffUntil.filter { activeIDs.contains($0.key) }
+        statusBackoffUntil = statusBackoffUntil.filter { activeIDs.contains($0.key) }
+        pendingDeviceCommandIDs = pendingDeviceCommandIDs.filter { activeIDs.contains($0) }
+        pendingDeviceCommandStartedAt = pendingDeviceCommandStartedAt.filter { activeIDs.contains($0.key) }
+        pendingControlIDs = pendingControlIDs.filter { pendingID in
+            guard let deviceID = pendingID.split(separator: "|").first.map(String.init) else { return false }
+            return activeIDs.contains(deviceID)
+        }
+        syncIssues.removeAll { !activeIDs.contains($0.deviceID) }
     }
 
     private func cacheKey(session: ThinQSessionStore) -> String {

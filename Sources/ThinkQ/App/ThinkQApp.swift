@@ -144,9 +144,10 @@ struct ThinkQCommands: Commands {
         }
         CommandMenu("Devices") {
             Button("Refresh Devices") {
-                Task { await deviceStore.refresh(session: session) }
+                Task { await deviceStore.refresh(session: session, force: true) }
             }
             .keyboardShortcut("r", modifiers: [.command])
+            .disabled(deviceStore.state == .loading)
         }
     }
 }

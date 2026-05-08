@@ -15,11 +15,18 @@ struct MenuBarDashboardView: View {
                     .font(.headline)
                 Spacer()
                 Button {
-                    Task { await deviceStore.refresh(session: session) }
+                    Task { await deviceStore.refresh(session: session, force: true) }
                 } label: {
-                    Image(systemName: "arrow.clockwise")
+                    if deviceStore.state == .loading {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
                 }
                 .buttonStyle(.borderless)
+                .disabled(deviceStore.state == .loading)
+                .help("Force refresh devices from LG")
             }
 
             if !session.hasToken {

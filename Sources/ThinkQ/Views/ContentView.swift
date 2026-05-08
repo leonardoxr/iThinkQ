@@ -22,10 +22,11 @@ struct ContentView: View {
         .toolbar {
             ToolbarItemGroup {
                 Button {
-                    Task { await deviceStore.refresh(session: session) }
+                    Task { await deviceStore.refresh(session: session, force: true) }
                 } label: {
                     Label("Refresh", systemImage: "arrow.clockwise")
                 }
+                .disabled(deviceStore.state == .loading)
 
                 SettingsLink {
                     Label("Settings", systemImage: "gearshape")
