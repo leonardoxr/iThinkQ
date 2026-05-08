@@ -2,6 +2,8 @@
 
 > Heavily WIP native macOS client for LG ThinQ devices.
 
+This is an experiment that i invested a bit of time in because i'm lazy and getting up to get my cellphone to turn my AC on was boring. 
+
 ThinkQ is an experimental SwiftUI macOS app for viewing and controlling LG ThinQ devices through the ThinQ Connect API. It is built as a native desktop app with a full window, menu bar dashboard, onboarding, Keychain token storage, polling, live-event groundwork, and device-specific controls for common appliance families.
 
 This project is not affiliated with, endorsed by, or supported by LG Electronics. ThinQ, LG, and related marks belong to their owners.
