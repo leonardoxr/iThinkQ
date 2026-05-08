@@ -136,7 +136,11 @@ struct MenuBarDeviceRow: View {
             }
 
             HStack(spacing: 8) {
-                if deviceStore.primaryCapability(.power, for: device) != nil {
+                if deviceStore.pendingQuickControl(.power, for: device) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .help("Sending power command")
+                } else if deviceStore.primaryCapability(.power, for: device) != nil {
                     Button {
                         Task { await togglePower() }
                     } label: {
@@ -144,17 +148,21 @@ struct MenuBarDeviceRow: View {
                     }
                     .foregroundStyle(listingStatus.tint)
                     .disabled(!deviceStore.canSendQuickControl(.power, for: device))
-                    .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
+                    .help(controlHelp(.power, fallback: listingStatus.isPoweredOn ? "Turn off" : "Turn on"))
                 }
 
-                if deviceStore.primaryCapability(.temperature, for: device) != nil, listingStatus.isOnline {
+                if deviceStore.pendingQuickControl(.temperature, for: device) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .help("Sending temperature command")
+                } else if deviceStore.primaryCapability(.temperature, for: device) != nil, listingStatus.isOnline {
                     Button {
                         Task { await deviceStore.adjustTemperature(for: device, delta: -1, session: session) }
                     } label: {
                         Image(systemName: "minus")
                     }
                     .disabled(!deviceStore.canSendQuickControl(.temperature, for: device))
-                    .help("Lower temperature")
+                    .help(controlHelp(.temperature, fallback: "Lower temperature"))
 
                     Text(temperatureText ?? "--")
                         .font(.caption.monospacedDigit())
@@ -166,7 +174,7 @@ struct MenuBarDeviceRow: View {
                         Image(systemName: "plus")
                     }
                     .disabled(!deviceStore.canSendQuickControl(.temperature, for: device))
-                    .help("Raise temperature")
+                    .help(controlHelp(.temperature, fallback: "Raise temperature"))
                 } else if device.type == .airConditioner, let temperatureText {
                     Text(temperatureText)
                         .font(.caption.monospacedDigit())
@@ -174,6 +182,9 @@ struct MenuBarDeviceRow: View {
                         .frame(minWidth: 58, alignment: .leading)
                         .help("Last known room temperature")
                 }
+
+                quickEnumControl(role: .mode, title: "Mode")
+                quickEnumControl(role: .fan, title: "Fan")
 
                 Spacer()
 
@@ -196,18 +207,47 @@ struct MenuBarDeviceRow: View {
             Button {
                 Task { await togglePower() }
             } label: {
-                Label(listingStatus.title, systemImage: listingStatus.symbol)
-                    .font(.caption)
+                if deviceStore.pendingQuickControl(.power, for: device) {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Label(listingStatus.title, systemImage: listingStatus.symbol)
+                        .font(.caption)
+                }
             }
             .buttonStyle(.borderless)
             .foregroundStyle(listingStatus.tint)
             .disabled(!deviceStore.canSendQuickControl(.power, for: device))
-            .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
+            .help(controlHelp(.power, fallback: listingStatus.isPoweredOn ? "Turn off" : "Turn on"))
         } else {
             Label(listingStatus.title, systemImage: listingStatus.symbol)
                 .font(.caption)
                 .foregroundStyle(listingStatus.tint)
                 .labelStyle(.titleAndIcon)
+        }
+    }
+
+    @ViewBuilder
+    private func quickEnumControl(role: DeviceControlRole, title: String) -> some View {
+        if let capability = deviceStore.primaryCapability(role, for: device),
+           capability.kind == .enumeration,
+           listingStatus.isOnline {
+            if deviceStore.pendingQuickControl(role, for: device) {
+                ProgressView()
+                    .controlSize(.small)
+                    .help("Sending \(title.lowercased()) command")
+            } else {
+                Picker(title, selection: enumSelectionBinding(role: role, capability: capability)) {
+                    ForEach(capability.enumValues, id: \.self) { value in
+                        Text(value.thinkQTitleCasedValue)
+                            .tag(value)
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: role == .mode ? 86 : 72)
+                .disabled(!deviceStore.canSendQuickControl(role, for: device))
+                .help(controlHelp(role, fallback: "Change \(title.lowercased())"))
+            }
         }
     }
 
@@ -217,6 +257,19 @@ struct MenuBarDeviceRow: View {
 
     private var temperatureText: String? {
         deviceStore.sidebarTemperatureText(for: device)
+    }
+
+    private func enumSelectionBinding(role: DeviceControlRole, capability: DeviceCapability) -> Binding<String> {
+        Binding {
+            let current = deviceStore.currentText(for: device, role: role) ?? capability.enumValues.first ?? ""
+            return capability.enumValues.contains(current) ? current : capability.enumValues.first ?? ""
+        } set: { newValue in
+            Task { await deviceStore.sendEnumQuickControl(role, value: newValue, for: device, session: session) }
+        }
+    }
+
+    private func controlHelp(_ role: DeviceControlRole, fallback: String) -> String {
+        deviceStore.unavailableQuickControlReason(role, for: device) ?? fallback
     }
 
     private func openDevice() {

@@ -340,6 +340,25 @@ final class DeviceStore {
         pendingControlIDs.contains(controlKey(deviceID: device.id, capabilityID: capability.id))
     }
 
+    func pendingQuickControl(_ role: DeviceControlRole, for device: ThinQDevice) -> Bool {
+        guard let capability = primaryCapability(role, for: device) else { return false }
+        return isControlPending(capability, for: device)
+    }
+
+    func unavailableQuickControlReason(_ role: DeviceControlRole, for device: ThinQDevice) -> String? {
+        guard primaryCapability(role, for: device) != nil else { return "This model does not expose a safe \(role.title.lowercased()) control." }
+        if let reason = statuses[device.id]?.unavailableReason {
+            return reason
+        }
+        if statuses[device.id]?.isAvailable == false {
+            return "Device is offline."
+        }
+        if pendingQuickControl(role, for: device) {
+            return "Command is still being sent."
+        }
+        return nil
+    }
+
     func adjustTemperature(for device: ThinQDevice, delta: Double, session: ThinQSessionStore) async {
         guard let capability = primaryCapability(.temperature, for: device),
               let range = capability.range
@@ -348,6 +367,11 @@ final class DeviceStore {
         let stepped = current + delta
         let clamped = min(range.max, max(range.min, stepped))
         await send(capability: capability, value: .number(clamped), device: device, session: session)
+    }
+
+    func sendEnumQuickControl(_ role: DeviceControlRole, value: String, for device: ThinQDevice, session: ThinQSessionStore) async {
+        guard let capability = primaryCapability(role, for: device) else { return }
+        await send(capability: capability, value: .string(value), device: device, session: session)
     }
 
     func startPolling(session: ThinQSessionStore) {
