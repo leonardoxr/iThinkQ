@@ -37,6 +37,13 @@ struct ContentView: View {
                 deviceStore.applyLiveEvent(message)
             }
         }
+        .onChange(of: deviceListKey) { _, _ in
+            Task {
+                await liveEventService.autoConnect(session: session, devices: deviceStore.devices) { message in
+                    deviceStore.applyLiveEvent(message)
+                }
+            }
+        }
         .onAppear {
             showingOnboarding = shouldShowOnboarding
         }
@@ -50,6 +57,10 @@ struct ContentView: View {
 
     private var liveEventKey: UUID? {
         liveEventService.recentMessages.first?.id
+    }
+
+    private var deviceListKey: String {
+        deviceStore.devices.map(\.id).sorted().joined(separator: "|")
     }
 
     private var shouldShowOnboarding: Bool {

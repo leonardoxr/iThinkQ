@@ -25,11 +25,7 @@ struct ThinkQApp: App {
                 .task {
                     await deviceStore.refresh(session: session)
                     deviceStore.startPolling(session: session)
-                    if deviceStore.rateLimitedUntil == nil || deviceStore.rateLimitedUntil! <= Date() {
-                        await liveEventService.autoConnect(session: session, devices: deviceStore.devices) { message in
-                            deviceStore.applyLiveEvent(message)
-                        }
-                    }
+                    await connectLiveEventsIfPossible()
                 }
                 .onDisappear {
                     deviceStore.stopPolling()
@@ -55,11 +51,7 @@ struct ThinkQApp: App {
                     if deviceStore.devices.isEmpty {
                         await deviceStore.refresh(session: session)
                     }
-                    if deviceStore.rateLimitedUntil == nil || deviceStore.rateLimitedUntil! <= Date() {
-                        await liveEventService.autoConnect(session: session, devices: deviceStore.devices) { message in
-                            deviceStore.applyLiveEvent(message)
-                        }
-                    }
+                    await connectLiveEventsIfPossible()
                 }
         }
         .menuBarExtraStyle(.window)
@@ -70,6 +62,16 @@ struct ThinkQApp: App {
                 .environment(deviceStore)
                 .environment(liveEventService)
                 .frame(width: 560)
+        }
+    }
+
+    @MainActor
+    private func connectLiveEventsIfPossible() async {
+        if let rateLimitedUntil = deviceStore.rateLimitedUntil, rateLimitedUntil > Date() {
+            return
+        }
+        await liveEventService.autoConnect(session: session, devices: deviceStore.devices) { message in
+            deviceStore.applyLiveEvent(message)
         }
     }
 }

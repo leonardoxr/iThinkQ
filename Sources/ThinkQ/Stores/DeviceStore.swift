@@ -35,6 +35,7 @@ final class DeviceStore {
     var lastLiveEventSummary: String?
     var consecutiveRefreshFailures = 0
     var rateLimitedUntil: Date?
+    var privacyActionMessage: String?
 
     init(
         liveClient: ThinQClient = ThinQHTTPClient(),
@@ -195,6 +196,57 @@ final class DeviceStore {
         customizationStore.setVisual(symbolName: symbolName, accentName: accentName, for: device.id)
     }
 
+    func clearCachedData(session: ThinQSessionStore) {
+        cacheStore.clear(sessionKey: cacheKey(session: session))
+        profiles = [:]
+        statuses = [:]
+        syncIssues = []
+        lastSync = nil
+        rateLimitedUntil = nil
+        profileBackoffUntil = [:]
+        statusBackoffUntil = [:]
+        privacyActionMessage = "Cleared cached device data for this account."
+    }
+
+    func sanitizedDiagnostics(session: ThinQSessionStore, liveEventState: String) -> String {
+        let groupedDevices = Dictionary(grouping: devices, by: \.type.title)
+            .mapValues(\.count)
+            .sorted { $0.key < $1.key }
+        let onlineCount = devices.filter { statuses[$0.id]?.isAvailable ?? false }.count
+        let issueSummaries = syncIssues.prefix(8).map { issue in
+            "- \(issue.area): \(issue.userFacingSummary)"
+        }
+
+        var lines: [String] = [
+            "ThinkQ Diagnostics",
+            "Generated: \(Date().formatted(date: .abbreviated, time: .standard))",
+            "Country: \(session.country.rawValue)",
+            "Region: \(session.region.rawValue)",
+            "Has token: \(session.hasToken ? "yes" : "no")",
+            "Menu bar mode: \(session.menuBarMode.title)",
+            "Refresh interval: \(Int(session.refreshInterval))s",
+            "Devices: \(devices.count)",
+            "Online devices: \(onlineCount)",
+            "Profiles cached: \(profiles.count)",
+            "Statuses cached: \(statuses.count)",
+            "Last sync: \(lastSync?.formatted(date: .abbreviated, time: .standard) ?? "never")",
+            "Live events: \(liveEventState)"
+        ]
+
+        if !groupedDevices.isEmpty {
+            lines.append("Device families:")
+            lines.append(contentsOf: groupedDevices.map { "- \($0.key): \($0.value)" })
+        }
+
+        if !issueSummaries.isEmpty {
+            lines.append("Sync issues:")
+            lines.append(contentsOf: issueSummaries)
+        }
+
+        lines.append("No tokens, device IDs, raw payloads, certificates, or private keys are included.")
+        return lines.joined(separator: "\n")
+    }
+
     func symbolName(for device: ThinQDevice) -> String {
         customizationStore.symbolName(for: device)
     }
@@ -242,6 +294,16 @@ final class DeviceStore {
         }
         guard let selectedValue else { return }
         await send(capability: capability, value: .string(selectedValue), device: device, session: session)
+    }
+
+    func canSendQuickControl(_ role: DeviceControlRole, for device: ThinQDevice) -> Bool {
+        guard let capability = primaryCapability(role, for: device) else { return false }
+        guard statuses[device.id]?.isAvailable ?? true else { return false }
+        return !pendingControlIDs.contains(controlKey(deviceID: device.id, capabilityID: capability.id))
+    }
+
+    func isControlPending(_ capability: DeviceCapability, for device: ThinQDevice) -> Bool {
+        pendingControlIDs.contains(controlKey(deviceID: device.id, capabilityID: capability.id))
     }
 
     func adjustTemperature(for device: ThinQDevice, delta: Double, session: ThinQSessionStore) async {
@@ -309,7 +371,9 @@ final class DeviceStore {
         let client = session.hasToken ? liveClient : mockClient
         do {
             let command = try controlEngine.command(deviceID: device.id, capability: capability, value: value)
-            pendingControlIDs.insert(capability.id)
+            let pendingID = controlKey(deviceID: device.id, capabilityID: capability.id)
+            pendingControlIDs.insert(pendingID)
+            defer { pendingControlIDs.remove(pendingID) }
             lastControlError = nil
             AppLog.control.info("Sending control \(capability.id, privacy: .public)")
             try await client.sendControl(command, session: snapshot)
@@ -323,7 +387,6 @@ final class DeviceStore {
             }
             AppLog.control.error("Control failed: \(error.localizedDescription, privacy: .public)")
         }
-        pendingControlIDs.remove(capability.id)
     }
 
     private func loadDetails(client: ThinQClient, snapshot: ThinQSessionSnapshot, force: Bool) async throws {
@@ -424,6 +487,10 @@ final class DeviceStore {
 
     private func cacheKey(session: ThinQSessionStore) -> String {
         cacheStore.sessionKey(country: session.country, clientID: session.clientID)
+    }
+
+    private func controlKey(deviceID: String, capabilityID: String) -> String {
+        "\(deviceID)|\(capabilityID)"
     }
 
     private func saveCache(session: ThinQSessionStore) {

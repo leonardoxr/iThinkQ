@@ -80,4 +80,33 @@ struct ProfileParserTests {
         #expect(capabilities.first { $0.id == "MAIN.operation.washerOperationMode" }?.isWritable == true)
         #expect(capabilities.first { $0.id == "MAIN.timer.remainMinute" }?.isWritable == false)
     }
+
+    @Test func parsesSanitizedAirConditionerFixture() throws {
+        let raw = try FixtureLoader.jsonObject("air-conditioner-profile")
+        let capabilities = DeviceProfileParser.capabilities(from: raw)
+
+        #expect(capabilities.contains { $0.id == "operation.airConOperationMode" && $0.isWritable })
+        #expect(capabilities.contains { $0.id == "temperature.targetTemperature" && $0.range?.min == 18 })
+        #expect(capabilities.contains { $0.id == "airFlow.rotateUpDown" && $0.kind == .bool })
+        #expect(capabilities.contains { $0.id == "airFlow.vanePosition" && $0.enumValues.contains("AUTO") })
+    }
+
+    @Test func flattensSanitizedAirConditionerStatusFixture() throws {
+        let raw = try FixtureLoader.jsonObject("air-conditioner-status")
+        let values = DeviceProfileParser.flattenStatus(raw)
+
+        #expect(values["operation.airConOperationMode"]?.displayText == "POWER_ON")
+        #expect(values["temperature.targetTemperature"]?.displayText == "22")
+        #expect(values["airFlow.rotateUpDown"]?.displayText == "On")
+        #expect(values["airFlow.vanePosition"]?.displayText == "AUTO")
+    }
+
+    @Test func parsesSanitizedLaundryFixture() throws {
+        let raw = try FixtureLoader.jsonObject("laundry-profile")
+        let capabilities = DeviceProfileParser.capabilities(from: raw)
+
+        #expect(capabilities.contains { $0.id == "MAIN.operation.washerOperationMode" && $0.isWritable })
+        #expect(capabilities.contains { $0.id == "MAIN.cycle.currentCycle" && !$0.isWritable })
+        #expect(capabilities.contains { $0.id == "MAIN.timer.remainMinute" && !$0.isWritable })
+    }
 }

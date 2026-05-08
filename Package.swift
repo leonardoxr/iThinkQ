@@ -26,7 +26,10 @@ let package = Package(
         .testTarget(
             name: "ThinkQTests",
             dependencies: ["ThinkQ"],
-            path: "Tests/ThinkQTests"
+            path: "Tests/ThinkQTests",
+            resources: [
+                .process("Fixtures")
+            ]
         )
     ]
 )

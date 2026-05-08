@@ -31,6 +31,7 @@ final class LiveEventService {
     private var autoConnectTask: Task<Void, Never>?
     private var connectionKey: String?
     private var messageHandler: (@MainActor (LiveEventMessage) -> Void)?
+    private var retryAfter: Date?
 
     init(
         client: ThinQClient = ThinQHTTPClient(),
@@ -49,6 +50,10 @@ final class LiveEventService {
     ) async {
         guard session.hasToken else {
             await disconnect()
+            return
+        }
+        if let retryAfter, retryAfter > Date() {
+            AppLog.sync.info("Skipped MQTT auto-connect during retry backoff")
             return
         }
         let reportableDevices = devices.filter(\.reportable)
@@ -76,7 +81,9 @@ final class LiveEventService {
             guard let self else { return }
             await self.prepare(session: session, devices: reportableDevices)
             guard !Task.isCancelled else { return }
-            await self.connect(session: session)
+            if case .ready = self.state {
+                await self.connect(session: session)
+            }
         }
     }
 
@@ -102,9 +109,11 @@ final class LiveEventService {
             let mqttRoute = route.stringValue("mqttServer") ?? route.stringValue("mqtt") ?? "ThinQ route available"
             certificateBundle = bundle
             state = .ready(route: mqttRoute)
+            retryAfter = nil
             AppLog.sync.info("Prepared ThinQ event client and certificate")
         } catch {
-            state = .failed(error.localizedDescription)
+            retryAfter = Date().addingTimeInterval(15 * 60)
+            state = .failed("\(error.localizedDescription). Falling back to polling; retry later.")
             AppLog.sync.error("Live event preparation failed: \(error.localizedDescription, privacy: .public)")
         }
     }
@@ -142,9 +151,11 @@ final class LiveEventService {
                 }
             }
             state = .connected(host: host)
+            retryAfter = nil
             AppLog.sync.info("Connected ThinQ MQTT stream")
         } catch {
-            state = .failed(error.localizedDescription)
+            retryAfter = Date().addingTimeInterval(15 * 60)
+            state = .failed("\(error.localizedDescription). Falling back to polling; retry later.")
             AppLog.sync.error("MQTT connection failed: \(error.localizedDescription, privacy: .public)")
         }
     }
@@ -153,6 +164,7 @@ final class LiveEventService {
         autoConnectTask?.cancel()
         autoConnectTask = nil
         connectionKey = nil
+        retryAfter = nil
         try? await mqttTransport.disconnect()
         state = .idle
     }

@@ -113,15 +113,20 @@ struct MenuBarDeviceRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button {
-                deviceStore.selection = device.id
-                openWindow(id: "main")
-                AppLog.menuBar.info("Opened device from menu bar")
-            } label: {
-                HStack(spacing: 10) {
+            HStack(spacing: 10) {
+                Button {
+                    openDevice()
+                } label: {
                     Image(systemName: deviceStore.symbolName(for: device))
                         .foregroundStyle(deviceStore.accent(for: device))
                         .frame(width: 18)
+                }
+                .buttonStyle(.plain)
+                .help("Open device")
+
+                Button {
+                    openDevice()
+                } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(shortTitle(device.displayName))
                             .lineLimit(1)
@@ -130,35 +135,22 @@ struct MenuBarDeviceRow: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
-                    Spacer()
-                    if deviceStore.primaryCapability(.power, for: device) != nil {
-                        Button {
-                            Task { await deviceStore.setPower(!isPoweredOn, for: device, session: session) }
-                        } label: {
-                            Label(listingStatus.title, systemImage: listingStatus.symbol)
-                                .font(.caption)
-                        }
-                        .buttonStyle(.borderless)
-                        .foregroundStyle(listingStatus.tint)
-                        .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
-                    } else {
-                        Label(listingStatus.title, systemImage: listingStatus.symbol)
-                            .font(.caption)
-                            .foregroundStyle(listingStatus.tint)
-                            .labelStyle(.titleAndIcon)
-                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .buttonStyle(.plain)
+
+                powerControl
             }
-            .buttonStyle(.plain)
 
             HStack(spacing: 8) {
                 if deviceStore.primaryCapability(.power, for: device) != nil {
                     Button {
-                        Task { await deviceStore.setPower(!isPoweredOn, for: device, session: session) }
+                        Task { await togglePower() }
                     } label: {
                         Image(systemName: listingStatus.isPoweredOn ? "power.circle.fill" : "power.circle")
                     }
                     .foregroundStyle(listingStatus.tint)
+                    .disabled(!deviceStore.canSendQuickControl(.power, for: device))
                     .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
                 }
 
@@ -168,6 +160,7 @@ struct MenuBarDeviceRow: View {
                     } label: {
                         Image(systemName: "minus")
                     }
+                    .disabled(!deviceStore.canSendQuickControl(.temperature, for: device))
                     .help("Lower temperature")
 
                     Text(temperatureText)
@@ -179,6 +172,7 @@ struct MenuBarDeviceRow: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .disabled(!deviceStore.canSendQuickControl(.temperature, for: device))
                     .help("Raise temperature")
                 }
 
@@ -197,6 +191,27 @@ struct MenuBarDeviceRow: View {
         .thinkQGlassSurface(interactive: true)
     }
 
+    @ViewBuilder
+    private var powerControl: some View {
+        if deviceStore.primaryCapability(.power, for: device) != nil {
+            Button {
+                Task { await togglePower() }
+            } label: {
+                Label(listingStatus.title, systemImage: listingStatus.symbol)
+                    .font(.caption)
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(listingStatus.tint)
+            .disabled(!deviceStore.canSendQuickControl(.power, for: device))
+            .help(listingStatus.isPoweredOn ? "Turn off" : "Turn on")
+        } else {
+            Label(listingStatus.title, systemImage: listingStatus.symbol)
+                .font(.caption)
+                .foregroundStyle(listingStatus.tint)
+                .labelStyle(.titleAndIcon)
+        }
+    }
+
     private var isPoweredOn: Bool {
         listingStatus.isPoweredOn
     }
@@ -206,6 +221,18 @@ struct MenuBarDeviceRow: View {
             return "\(Int(value))°"
         }
         return "--"
+    }
+
+    private func openDevice() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        deviceStore.selection = device.id
+        openWindow(id: "main")
+        AppLog.menuBar.info("Opened device from menu bar")
+    }
+
+    private func togglePower() async {
+        await deviceStore.setPower(!isPoweredOn, for: device, session: session)
     }
 
     private func shortTitle(_ title: String) -> String {

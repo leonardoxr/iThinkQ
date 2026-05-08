@@ -1,0 +1,65 @@
+{
+  "property": {
+    "operation": {
+      "airConOperationMode": {
+        "type": "enum",
+        "mode": ["r", "w"],
+        "value": {
+          "w": ["POWER_ON", "POWER_OFF"]
+        }
+      }
+    },
+    "airConJobMode": {
+      "currentJobMode": {
+        "type": "enum",
+        "mode": ["r", "w"],
+        "value": {
+          "w": ["COOL", "DRY", "FAN", "AI"]
+        }
+      }
+    },
+    "temperature": {
+      "targetTemperature": {
+        "type": "range",
+        "mode": ["r", "w"],
+        "unit": "C",
+        "value": {
+          "w": {
+            "min": 18,
+            "max": 30,
+            "step": 1
+          }
+        }
+      }
+    },
+    "airFlow": {
+      "windStrength": {
+        "type": "enum",
+        "mode": ["r", "w"],
+        "value": {
+          "w": ["LOW", "MID", "HIGH", "AUTO"]
+        }
+      },
+      "rotateUpDown": {
+        "type": "boolean",
+        "mode": ["r", "w"]
+      },
+      "vanePosition": {
+        "type": "enum",
+        "mode": ["r", "w"],
+        "value": {
+          "w": ["UP", "MIDDLE", "DOWN", "AUTO"]
+        }
+      }
+    },
+    "display": {
+      "light": {
+        "type": "enum",
+        "mode": ["r", "w"],
+        "value": {
+          "w": ["ON", "OFF"]
+        }
+      }
+    }
+  }
+}

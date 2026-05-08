@@ -48,17 +48,44 @@ struct DeviceCacheStore {
         }
     }
 
+    func clear(sessionKey: String) {
+        do {
+            let url = cacheURL(sessionKey: sessionKey)
+            if fileManager.fileExists(atPath: url.path) {
+                try fileManager.removeItem(at: url)
+            }
+            AppLog.cache.info("Cleared device cache")
+        } catch {
+            AppLog.cache.error("Failed to clear device cache: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    func clearAll() {
+        do {
+            let url = cacheDirectoryURL()
+            if fileManager.fileExists(atPath: url.path) {
+                try fileManager.removeItem(at: url)
+            }
+            AppLog.cache.info("Cleared all device cache files")
+        } catch {
+            AppLog.cache.error("Failed to clear all device cache files: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     func sessionKey(country: ThinQCountry, clientID: String) -> String {
         "\(country.rawValue)-\(clientID)"
             .replacingOccurrences(of: "[^A-Za-z0-9_-]", with: "-", options: .regularExpression)
     }
 
     private func cacheURL(sessionKey: String) -> URL {
+        cacheDirectoryURL().appendingPathComponent("\(sessionKey).json")
+    }
+
+    private func cacheDirectoryURL() -> URL {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.temporaryDirectory
         return base
             .appendingPathComponent("ThinkQ", isDirectory: true)
             .appendingPathComponent("DeviceCache", isDirectory: true)
-            .appendingPathComponent("\(sessionKey).json")
     }
 }

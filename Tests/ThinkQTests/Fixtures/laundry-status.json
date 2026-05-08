@@ -1,0 +1,11 @@
+{
+  "operation": {
+    "washerOperationMode": "RUNNING"
+  },
+  "cycle": {
+    "currentCycle": "NORMAL"
+  },
+  "timer": {
+    "remainMinute": 42
+  }
+}

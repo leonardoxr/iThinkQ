@@ -73,7 +73,7 @@ struct CapabilityControlView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                if deviceStore.pendingControlIDs.contains(capability.id) {
+                if deviceStore.isControlPending(capability, for: device) {
                     ProgressView()
                         .controlSize(.small)
                 }

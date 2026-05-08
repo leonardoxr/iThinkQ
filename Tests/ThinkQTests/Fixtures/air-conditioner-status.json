@@ -1,0 +1,20 @@
+{
+  "operation": {
+    "airConOperationMode": "POWER_ON"
+  },
+  "airConJobMode": {
+    "currentJobMode": "COOL"
+  },
+  "temperature": {
+    "targetTemperature": 22,
+    "currentTemperature": 24
+  },
+  "airFlow": {
+    "windStrength": "HIGH",
+    "rotateUpDown": true,
+    "vanePosition": "AUTO"
+  },
+  "display": {
+    "light": "OFF"
+  }
+}

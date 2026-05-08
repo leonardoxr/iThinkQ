@@ -142,6 +142,21 @@ struct SettingsView: View {
             Section("Privacy") {
                 Text("ThinkQ stores your token in Keychain and does not write tokens or raw personal device data to logs.")
                     .foregroundStyle(.secondary)
+                Button {
+                    copySanitizedDiagnostics()
+                } label: {
+                    Label("Copy Sanitized Diagnostics", systemImage: "doc.on.clipboard")
+                }
+                Button(role: .destructive) {
+                    deviceStore.clearCachedData(session: session)
+                } label: {
+                    Label("Clear Cached Device Data", systemImage: "trash")
+                }
+                if let message = deviceStore.privacyActionMessage {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section("Developer Reference") {
@@ -183,5 +198,12 @@ struct SettingsView: View {
         } else {
             false
         }
+    }
+
+    private func copySanitizedDiagnostics() {
+        let text = deviceStore.sanitizedDiagnostics(session: session, liveEventState: liveEventService.state.title)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        deviceStore.privacyActionMessage = "Copied sanitized diagnostics to the clipboard."
     }
 }

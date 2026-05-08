@@ -1,0 +1,39 @@
+{
+  "property": [
+    {
+      "location": {
+        "locationName": "MAIN"
+      },
+      "operation": {
+        "washerOperationMode": {
+          "type": "enum",
+          "mode": ["r", "w"],
+          "value": {
+            "w": ["START", "PAUSE", "STOP"]
+          }
+        }
+      },
+      "cycle": {
+        "currentCycle": {
+          "type": "enum",
+          "mode": ["r"],
+          "value": {
+            "r": ["NORMAL", "DELICATES", "TOWELS"]
+          }
+        }
+      },
+      "timer": {
+        "remainMinute": {
+          "type": "range",
+          "mode": ["r"],
+          "value": {
+            "r": {
+              "min": 0,
+              "max": 240
+            }
+          }
+        }
+      }
+    }
+  ]
+}

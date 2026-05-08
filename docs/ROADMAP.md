@@ -9,6 +9,7 @@ ThinkQ is heavily WIP. This roadmap is intentionally practical and may change as
 - Expand bespoke controls beyond air conditioners.
 - Improve menu bar-only mode and quick controls.
 - Add clearer error states for offline devices and rate limits.
+- Automate prerelease packaging from GitHub tags.
 
 ## Mid Term
 
