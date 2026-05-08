@@ -26,17 +26,20 @@ struct KeychainStore: Sendable {
     func setString(_ value: String, for account: String) throws {
         let data = Data(value.utf8)
         var query = baseQuery(account: account)
-        let attributes = [kSecValueData as String: data]
-        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
-        if status == errSecItemNotFound {
-            query[kSecValueData as String] = data
-            query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-            let addStatus = SecItemAdd(query as CFDictionary, nil)
-            guard addStatus == errSecSuccess else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: Int(addStatus))
-            }
-        } else if status != errSecSuccess {
-            throw NSError(domain: NSOSStatusErrorDomain, code: Int(status))
+        let deleteStatus = SecItemDelete(query as CFDictionary)
+        guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(deleteStatus))
+        }
+
+        query[kSecValueData as String] = data
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        if let access = Self.currentAppAccess(label: service) {
+            query[kSecAttrAccess as String] = access
+        }
+
+        let addStatus = SecItemAdd(query as CFDictionary, nil)
+        guard addStatus == errSecSuccess else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(addStatus))
         }
     }
 
@@ -53,5 +56,22 @@ struct KeychainStore: Sendable {
             kSecAttrService as String: service,
             kSecAttrAccount as String: account
         ]
+    }
+
+    private static func currentAppAccess(label: String) -> SecAccess? {
+        guard let executablePath = Bundle.main.executableURL?.path else { return nil }
+
+        var trustedApplication: SecTrustedApplication?
+        let trustedStatus = SecTrustedApplicationCreateFromPath(executablePath, &trustedApplication)
+        guard trustedStatus == errSecSuccess, let trustedApplication else { return nil }
+
+        var access: SecAccess?
+        let accessStatus = SecAccessCreate(
+            "\(label) token" as CFString,
+            [trustedApplication] as CFArray,
+            &access
+        )
+        guard accessStatus == errSecSuccess else { return nil }
+        return access
     }
 }

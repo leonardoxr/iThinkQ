@@ -94,6 +94,7 @@ final class ThinQSessionStore {
         self.backgroundNotificationsEnabled = defaults.object(forKey: DefaultsKey.backgroundNotifications) as? Bool ?? false
         self.onboardingCompleted = defaults.object(forKey: DefaultsKey.onboardingCompleted) as? Bool ?? false
         self.personalAccessToken = (try? keychain.string(for: tokenAccount)) ?? ""
+        migrateTokenAccessIfNeeded()
     }
 
     func saveToken(_ token: String) {
@@ -112,5 +113,15 @@ final class ThinQSessionStore {
 
     func completeOnboarding() {
         onboardingCompleted = true
+    }
+
+    private func migrateTokenAccessIfNeeded() {
+        guard hasToken else { return }
+        do {
+            try keychain.setString(personalAccessToken, for: tokenAccount)
+            AppLog.auth.info("Refreshed ThinQ token Keychain access")
+        } catch {
+            AppLog.auth.error("Failed to refresh token Keychain access: \(error.localizedDescription, privacy: .public)")
+        }
     }
 }
