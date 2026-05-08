@@ -71,6 +71,14 @@ struct MockThinQClient: ThinQClient {
         ["result": .object(["certificatePem": .string("mock"), "subscriptions": .array([.string("mock/topic")])])]
     }
 
+    func subscribePush(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON] {
+        ["subscribed": .bool(true)]
+    }
+
+    func unsubscribePush(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON] {
+        ["subscribed": .bool(false)]
+    }
+
     func subscribeEvents(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON] {
         ["subscribed": .bool(true)]
     }

@@ -11,4 +11,5 @@ enum AppLog {
     static let windowing = Logger(subsystem: subsystem, category: "Windowing")
     static let cache = Logger(subsystem: subsystem, category: "Cache")
     static let rateLimit = Logger(subsystem: subsystem, category: "RateLimit")
+    static let notifications = Logger(subsystem: subsystem, category: "Notifications")
 }

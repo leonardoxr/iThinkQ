@@ -29,6 +29,7 @@ final class LiveEventService {
     var certificateBundle: ClientCertificateBundle?
     var recentMessages: [LiveEventMessage] = []
     private var autoConnectTask: Task<Void, Never>?
+    private var subscriptionRenewalTask: Task<Void, Never>?
     private var connectionKey: String?
     private var messageHandler: (@MainActor (LiveEventMessage) -> Void)?
     private var retryAfter: Date?
@@ -84,6 +85,7 @@ final class LiveEventService {
             if case .ready = self.state {
                 await self.connect(session: session)
             }
+            self.startSubscriptionRenewal(session: session, devices: reportableDevices)
         }
     }
 
@@ -104,6 +106,7 @@ final class LiveEventService {
                 }
             }
             for device in devices where device.reportable {
+                _ = try? await client.subscribePush(deviceID: device.id, session: snapshot)
                 _ = try? await client.subscribeEvents(deviceID: device.id, session: snapshot)
             }
             let mqttRoute = route.stringValue("mqttServer") ?? route.stringValue("mqtt") ?? "ThinQ route available"
@@ -163,9 +166,32 @@ final class LiveEventService {
     func disconnect() async {
         autoConnectTask?.cancel()
         autoConnectTask = nil
+        subscriptionRenewalTask?.cancel()
+        subscriptionRenewalTask = nil
         connectionKey = nil
         retryAfter = nil
         try? await mqttTransport.disconnect()
         state = .idle
+    }
+
+    private func startSubscriptionRenewal(session: ThinQSessionStore, devices: [ThinQDevice]) {
+        subscriptionRenewalTask?.cancel()
+        subscriptionRenewalTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(23 * 60 * 60))
+                guard let self, !Task.isCancelled else { return }
+                await self.renewSubscriptions(session: session, devices: devices)
+            }
+        }
+    }
+
+    private func renewSubscriptions(session: ThinQSessionStore, devices: [ThinQDevice]) async {
+        guard session.hasToken else { return }
+        let snapshot = ThinQSessionSnapshot(token: session.personalAccessToken, country: session.country, clientID: session.clientID)
+        for device in devices where device.reportable {
+            _ = try? await client.subscribePush(deviceID: device.id, session: snapshot)
+            _ = try? await client.subscribeEvents(deviceID: device.id, session: snapshot)
+        }
+        AppLog.sync.info("Renewed ThinQ push and event subscriptions")
     }
 }

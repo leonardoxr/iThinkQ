@@ -9,6 +9,8 @@ protocol ThinQClient: Sendable {
     func registerClient(session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
     func unregisterClient(session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
     func issueClientCertificate(csr: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
+    func subscribePush(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
+    func unsubscribePush(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
     func subscribeEvents(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
     func unsubscribeEvents(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON]
 }
@@ -82,11 +84,19 @@ struct ThinQHTTPClient: ThinQClient {
         )
     }
 
+    func subscribePush(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON] {
+        try await request(endpoint: "push/\(deviceID)/subscribe", method: "POST", session: session, includeServicePhase: false)
+    }
+
+    func unsubscribePush(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON] {
+        try await request(endpoint: "push/\(deviceID)/unsubscribe", method: "DELETE", session: session, includeServicePhase: false)
+    }
+
     func subscribeEvents(deviceID: String, session: ThinQSessionSnapshot) async throws -> [String: ThinQJSON] {
         try await request(
             endpoint: "event/\(deviceID)/subscribe",
             method: "POST",
-            body: .object(["expire": .object(["unit": .string("HOUR"), "timer": .number(4464)])]),
+            body: .object(["expire": .object(["unit": .string("HOUR"), "timer": .number(24)])]),
             session: session,
             includeServicePhase: false
         )

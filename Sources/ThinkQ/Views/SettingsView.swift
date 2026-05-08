@@ -5,6 +5,8 @@ struct SettingsView: View {
     @Environment(ThinQSessionStore.self) private var session
     @Environment(DeviceStore.self) private var deviceStore
     @Environment(LiveEventService.self) private var liveEventService
+    @Environment(NotificationService.self) private var notificationService
+    @Environment(LaunchAtLoginService.self) private var launchAtLoginService
     @State private var tokenDraft = ""
     @State private var isTestingToken = false
     @State private var tokenTestMessage: String?
@@ -54,6 +56,21 @@ struct SettingsView: View {
                 }
                 Toggle("Comfortable density", isOn: $session.comfortableDensity)
                 Toggle("Notifications", isOn: $session.notificationsEnabled)
+                    .onChange(of: session.notificationsEnabled) { _, enabled in
+                        if enabled {
+                            Task { await notificationService.requestAuthorization() }
+                        }
+                    }
+                Toggle("Keep notifications alive at login", isOn: backgroundNotificationsBinding)
+                Text("Starts ThinkQ at login so the menu bar app can keep the ThinQ MQTT stream connected. Notifications cannot arrive when no ThinkQ process is running.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let error = launchAtLoginService.lastError {
+                    Label(error, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                LabeledContent("Notification permission", value: notificationService.authorizationState.title)
                 Slider(value: $session.refreshInterval, in: 30...600, step: 30) {
                     Text("Refresh")
                 }
@@ -189,6 +206,19 @@ struct SettingsView: View {
         } catch {
             tokenTestSucceeded = false
             tokenTestMessage = error.localizedDescription
+        }
+    }
+
+    private var backgroundNotificationsBinding: Binding<Bool> {
+        Binding {
+            session.backgroundNotificationsEnabled
+        } set: { newValue in
+            session.backgroundNotificationsEnabled = newValue
+            launchAtLoginService.setEnabled(newValue)
+            if newValue {
+                session.menuBarMode = .menuBarFirst
+                Task { await notificationService.requestAuthorization() }
+            }
         }
     }
 

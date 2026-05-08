@@ -8,6 +8,8 @@ struct ThinkQApp: App {
     @State private var customizationStore = DeviceCustomizationStore()
     @State private var deviceStore: DeviceStore
     @State private var liveEventService = LiveEventService()
+    @State private var notificationService = NotificationService()
+    @State private var launchAtLoginService = LaunchAtLoginService()
 
     init() {
         let customizationStore = DeviceCustomizationStore()
@@ -22,7 +24,13 @@ struct ThinkQApp: App {
                 .environment(deviceStore)
                 .environment(customizationStore)
                 .environment(liveEventService)
+                .environment(notificationService)
+                .environment(launchAtLoginService)
                 .task {
+                    await notificationService.refreshAuthorizationState()
+                    if session.notificationsEnabled {
+                        await notificationService.requestAuthorization()
+                    }
                     await deviceStore.refresh(session: session)
                     deviceStore.startPolling(session: session)
                     await connectLiveEventsIfPossible()
@@ -47,7 +55,10 @@ struct ThinkQApp: App {
                 .environment(session)
                 .environment(deviceStore)
                 .environment(liveEventService)
+                .environment(notificationService)
+                .environment(launchAtLoginService)
                 .task {
+                    await notificationService.refreshAuthorizationState()
                     if deviceStore.devices.isEmpty {
                         await deviceStore.refresh(session: session)
                     }
@@ -61,6 +72,8 @@ struct ThinkQApp: App {
                 .environment(session)
                 .environment(deviceStore)
                 .environment(liveEventService)
+                .environment(notificationService)
+                .environment(launchAtLoginService)
                 .frame(width: 560)
         }
     }
@@ -72,6 +85,9 @@ struct ThinkQApp: App {
         }
         await liveEventService.autoConnect(session: session, devices: deviceStore.devices) { message in
             deviceStore.applyLiveEvent(message)
+            Task {
+                await notificationService.deliver(message: message, devices: deviceStore.devices, enabled: session.notificationsEnabled)
+            }
         }
     }
 }
@@ -79,6 +95,15 @@ struct ThinkQApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppLog.windowing.info("ThinkQ launched")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            let mode = UserDefaults.standard.string(forKey: "preferences.menuBarMode")
+            let backgroundNotifications = UserDefaults.standard.bool(forKey: "preferences.backgroundNotifications")
+            guard mode == ThinQSessionStore.MenuBarMode.menuBarFirst.rawValue || backgroundNotifications else { return }
+            for window in NSApp.windows where window.title == "ThinkQ" {
+                window.close()
+            }
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 
     @MainActor

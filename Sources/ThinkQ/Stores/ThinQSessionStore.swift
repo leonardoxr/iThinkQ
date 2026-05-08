@@ -27,6 +27,7 @@ final class ThinQSessionStore {
         static let menuBarMode = "preferences.menuBarMode"
         static let comfortableDensity = "preferences.comfortableDensity"
         static let notifications = "preferences.notifications"
+        static let backgroundNotifications = "preferences.backgroundNotifications"
         static let onboardingCompleted = "onboarding.completed"
     }
 
@@ -59,6 +60,10 @@ final class ThinQSessionStore {
         didSet { defaults.set(notificationsEnabled, forKey: DefaultsKey.notifications) }
     }
 
+    var backgroundNotificationsEnabled: Bool {
+        didSet { defaults.set(backgroundNotificationsEnabled, forKey: DefaultsKey.backgroundNotifications) }
+    }
+
     var onboardingCompleted: Bool {
         didSet { defaults.set(onboardingCompleted, forKey: DefaultsKey.onboardingCompleted) }
     }
@@ -86,6 +91,7 @@ final class ThinQSessionStore {
         self.menuBarMode = MenuBarMode(rawValue: mode) ?? .fullAppAndMenuBar
         self.comfortableDensity = defaults.object(forKey: DefaultsKey.comfortableDensity) as? Bool ?? true
         self.notificationsEnabled = defaults.object(forKey: DefaultsKey.notifications) as? Bool ?? true
+        self.backgroundNotificationsEnabled = defaults.object(forKey: DefaultsKey.backgroundNotifications) as? Bool ?? false
         self.onboardingCompleted = defaults.object(forKey: DefaultsKey.onboardingCompleted) as? Bool ?? false
         self.personalAccessToken = (try? keychain.string(for: tokenAccount)) ?? ""
     }

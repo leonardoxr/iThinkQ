@@ -14,6 +14,25 @@ struct LiveEventMessage: Identifiable, Hashable, Sendable {
         "Live event"
     }
 
+    var deviceID: String? {
+        guard let data = payload.data(using: .utf8),
+              let json = try? JSONDecoder().decode(ThinQJSON.self, from: data)
+        else { return nil }
+        return json.firstString(for: ["deviceId", "deviceID", "device_id"])
+    }
+
+    var isPushNotification: Bool {
+        guard let data = payload.data(using: .utf8),
+              let json = try? JSONDecoder().decode(ThinQJSON.self, from: data)
+        else {
+            return topic.localizedCaseInsensitiveContains("push")
+        }
+        if case .object(let object) = json {
+            return object["push"] != nil || topic.localizedCaseInsensitiveContains("push")
+        }
+        return topic.localizedCaseInsensitiveContains("push")
+    }
+
     var safeDisplaySummary: String {
         guard let data = payload.data(using: .utf8),
               let json = try? JSONDecoder().decode(ThinQJSON.self, from: data)
