@@ -195,6 +195,24 @@ enum DeviceControlCatalog {
             .first
     }
 
+    static func primaryTemperatureCapability(
+        capabilities: [DeviceCapability],
+        deviceType: DeviceType,
+        currentMode: String?
+    ) -> DeviceCapability? {
+        let temperatureCapabilities = actionableCapabilities(capabilities, for: deviceType)
+            .filter { self.role(for: $0, deviceType: deviceType) == .temperature }
+        guard !temperatureCapabilities.isEmpty else { return nil }
+
+        return temperatureCapabilities
+            .sorted { lhs, rhs in
+                temperatureScore(lhs, currentMode: currentMode) == temperatureScore(rhs, currentMode: currentMode)
+                    ? capabilitySort(lhs, rhs)
+                    : temperatureScore(lhs, currentMode: currentMode) < temperatureScore(rhs, currentMode: currentMode)
+            }
+            .first
+    }
+
     private static func roleOrder(for deviceType: DeviceType) -> [DeviceControlRole] {
         switch deviceType {
         case .airConditioner, .airPurifier, .airPurifierFan, .dehumidifier, .humidifier, .ceilingFan, .ventilator:
@@ -212,6 +230,21 @@ enum DeviceControlCatalog {
 
     private static func capabilitySort(_ lhs: DeviceCapability, _ rhs: DeviceCapability) -> Bool {
         score(lhs) == score(rhs) ? lhs.displayName < rhs.displayName : score(lhs) < score(rhs)
+    }
+
+    private static func temperatureScore(_ capability: DeviceCapability, currentMode: String?) -> Int {
+        let id = capability.id.lowercased()
+        let mode = currentMode?.lowercased() ?? ""
+
+        if mode.contains("cool"), id.contains("cooltargettemperature") { return 0 }
+        if mode.contains("auto") || mode.contains("ai"), id.contains("autotargettemperature") { return 0 }
+        if mode.contains("heat"), id.contains("heattargettemperature") { return 0 }
+        if mode.contains("dry"), id.contains("drytargettemperature") { return 0 }
+        if mode.contains("fan"), id.contains("fantargettemperature") { return 0 }
+
+        if id.hasSuffix(".targettemperature") || id.contains(".targettemperature") { return 2 }
+        if id.contains("targettemperature") { return 3 }
+        return 10
     }
 
     private static func score(_ capability: DeviceCapability) -> Int {

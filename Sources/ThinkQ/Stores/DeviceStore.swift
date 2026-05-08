@@ -260,17 +260,33 @@ final class DeviceStore {
     }
 
     func primaryCapability(_ role: DeviceControlRole, for device: ThinQDevice) -> DeviceCapability? {
-        DeviceControlCatalog.primaryCapability(role, capabilities: profiles[device.id]?.writableCapabilities ?? [], deviceType: device.type)
+        let capabilities = profiles[device.id]?.writableCapabilities ?? []
+        if role == .temperature {
+            return DeviceControlCatalog.primaryTemperatureCapability(
+                capabilities: capabilities,
+                deviceType: device.type,
+                currentMode: currentText(for: device, role: .mode)
+            )
+        }
+        return DeviceControlCatalog.primaryCapability(role, capabilities: capabilities, deviceType: device.type)
     }
 
     func currentNumber(for device: ThinQDevice, role: DeviceControlRole) -> Double? {
         guard role == .temperature else { return nil }
-        return statuses[device.id]?.firstNumber(
-            "temperature.targetTemperature",
-            "temperature.coolTargetTemperature",
-            "temperature.autoTargetTemperature",
-            "temperatureInUnits[0].targetTemperature"
-        )
+        let mode = currentText(for: device, role: .mode)?.lowercased() ?? ""
+        let preferredKeys: [String]
+        if mode.contains("cool") {
+            preferredKeys = ["temperature.coolTargetTemperature", "temperature.targetTemperature"]
+        } else if mode.contains("auto") || mode.contains("ai") {
+            preferredKeys = ["temperature.autoTargetTemperature", "temperature.targetTemperature"]
+        } else if mode.contains("heat") {
+            preferredKeys = ["temperature.heatTargetTemperature", "temperature.targetTemperature"]
+        } else if mode.contains("dry") {
+            preferredKeys = ["temperature.dryTargetTemperature", "temperature.targetTemperature"]
+        } else {
+            preferredKeys = ["temperature.targetTemperature", "temperature.coolTargetTemperature", "temperature.autoTargetTemperature"]
+        }
+        return statuses[device.id]?.firstNumber(preferredKeys + ["temperatureInUnits[0].targetTemperature"])
     }
 
     func currentText(for device: ThinQDevice, role: DeviceControlRole) -> String? {

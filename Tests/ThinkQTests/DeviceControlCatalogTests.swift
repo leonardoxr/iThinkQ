@@ -17,4 +17,16 @@ struct DeviceControlCatalogTests {
         #expect(DeviceControlCatalog.role(for: capabilities[3], deviceType: .airConditioner) == .direction)
         #expect(DeviceControlCatalog.role(for: capabilities[4], deviceType: .airConditioner) == .direction)
     }
+
+    @Test func airConditionerTemperatureCapabilityFollowsCurrentMode() {
+        let capabilities = [
+            DeviceCapability(id: "temperature.autoTargetTemperature", resource: "temperature", property: "autoTargetTemperature", displayName: "Auto Target Temperature", kind: .range, isReadable: true, isWritable: true, unit: "C", enumValues: [], range: .init(min: 18, max: 30, step: 1)),
+            DeviceCapability(id: "temperature.coolTargetTemperature", resource: "temperature", property: "coolTargetTemperature", displayName: "Cool Target Temperature", kind: .range, isReadable: true, isWritable: true, unit: "C", enumValues: [], range: .init(min: 18, max: 30, step: 1)),
+            DeviceCapability(id: "temperature.targetTemperature", resource: "temperature", property: "targetTemperature", displayName: "Target Temperature", kind: .range, isReadable: true, isWritable: true, unit: "C", enumValues: [], range: .init(min: 18, max: 30, step: 1))
+        ]
+
+        #expect(DeviceControlCatalog.primaryTemperatureCapability(capabilities: capabilities, deviceType: .airConditioner, currentMode: "COOL")?.id == "temperature.coolTargetTemperature")
+        #expect(DeviceControlCatalog.primaryTemperatureCapability(capabilities: capabilities, deviceType: .airConditioner, currentMode: "AI")?.id == "temperature.autoTargetTemperature")
+        #expect(DeviceControlCatalog.primaryTemperatureCapability(capabilities: capabilities, deviceType: .airConditioner, currentMode: nil)?.id == "temperature.targetTemperature")
+    }
 }

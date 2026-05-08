@@ -132,6 +132,10 @@ struct DeviceStatus: Codable, Hashable, Sendable {
     }
 
     func firstNumber(_ keys: String...) -> Double? {
+        firstNumber(keys)
+    }
+
+    func firstNumber(_ keys: [String]) -> Double? {
         for key in keys {
             if case .number(let value)? = values[key] {
                 return value

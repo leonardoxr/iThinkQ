@@ -273,7 +273,10 @@ struct AirConditionerControlView: View {
     }
 
     private func capability(for role: DeviceControlRole) -> DeviceCapability? {
-        DeviceControlCatalog.primaryCapability(role, capabilities: capabilities, deviceType: device.type)
+        if role == .temperature {
+            return deviceStore.primaryCapability(.temperature, for: device)
+        }
+        return DeviceControlCatalog.primaryCapability(role, capabilities: capabilities, deviceType: device.type)
     }
 
     private func hydrateState() {
