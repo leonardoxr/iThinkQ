@@ -180,9 +180,22 @@ struct DeviceCustomizationView: View {
                     Label("Save", systemImage: "checkmark.circle")
                 }
             }
+            Toggle(isOn: quickActionsBinding) {
+                Label("Show in Shortcuts and Spotlight quick actions", systemImage: "bolt.badge.clock")
+            }
+            .toggleStyle(.switch)
+            .help("Allows this device to appear in ThinkQ power actions outside the main app.")
         }
         .padding()
         .thinkQGlassSurface()
+    }
+
+    private var quickActionsBinding: Binding<Bool> {
+        Binding {
+            deviceStore.customization(for: device).quickActionsEnabled
+        } set: { isEnabled in
+            deviceStore.setQuickActionsEnabled(isEnabled, for: device)
+        }
     }
 }
 

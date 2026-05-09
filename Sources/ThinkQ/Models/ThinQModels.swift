@@ -221,8 +221,26 @@ struct DeviceCustomization: Codable, Hashable, Sendable {
     var symbolName: String?
     var accentName: String?
     var isFavorite: Bool
+    var quickActionsEnabled: Bool
 
-    static let empty = DeviceCustomization(alias: "", symbolName: nil, accentName: nil, isFavorite: false)
+    static let empty = DeviceCustomization(alias: "", symbolName: nil, accentName: nil, isFavorite: false, quickActionsEnabled: false)
+
+    init(alias: String, symbolName: String?, accentName: String?, isFavorite: Bool, quickActionsEnabled: Bool) {
+        self.alias = alias
+        self.symbolName = symbolName
+        self.accentName = accentName
+        self.isFavorite = isFavorite
+        self.quickActionsEnabled = quickActionsEnabled
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        alias = try container.decodeIfPresent(String.self, forKey: .alias) ?? ""
+        symbolName = try container.decodeIfPresent(String.self, forKey: .symbolName)
+        accentName = try container.decodeIfPresent(String.self, forKey: .accentName)
+        isFavorite = try container.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
+        quickActionsEnabled = try container.decodeIfPresent(Bool.self, forKey: .quickActionsEnabled) ?? false
+    }
 }
 
 extension Color {

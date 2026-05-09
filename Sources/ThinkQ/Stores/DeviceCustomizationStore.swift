@@ -76,6 +76,13 @@ final class DeviceCustomizationStore {
         save()
     }
 
+    func setQuickActionsEnabled(_ isEnabled: Bool, for deviceID: ThinQDevice.ID) {
+        var customization = customization(for: deviceID)
+        customization.quickActionsEnabled = isEnabled
+        customizations[deviceID] = customization
+        save()
+    }
+
     private func load() {
         guard let data = defaults.data(forKey: key),
               let decoded = try? JSONDecoder().decode([ThinQDevice.ID: DeviceCustomization].self, from: data)

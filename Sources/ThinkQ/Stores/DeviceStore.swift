@@ -73,6 +73,10 @@ final class DeviceStore {
         return favorites.isEmpty ? onlineDevices : favorites
     }
 
+    var quickActionDevices: [ThinQDevice] {
+        devices.filter { customizationStore.customization(for: $0.id).quickActionsEnabled }
+    }
+
     var userVisibleSyncIssues: [DeviceSyncIssue] {
         syncIssues.filter { !$0.isNonCriticalThinQFeatureGap }
     }
@@ -197,6 +201,10 @@ final class DeviceStore {
 
     func setVisual(_ device: ThinQDevice, symbolName: String?, accentName: String?) {
         customizationStore.setVisual(symbolName: symbolName, accentName: accentName, for: device.id)
+    }
+
+    func setQuickActionsEnabled(_ isEnabled: Bool, for device: ThinQDevice) {
+        customizationStore.setQuickActionsEnabled(isEnabled, for: device.id)
     }
 
     func clearCachedData(session: ThinQSessionStore) {
