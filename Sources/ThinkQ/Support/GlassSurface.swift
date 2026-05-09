@@ -5,8 +5,10 @@ struct ThinkQGlassSurface: ViewModifier {
     var cornerRadius: CGFloat = 8
     var isInteractive = false
 
+    @ViewBuilder
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+#if compiler(>=6.2)
         if #available(macOS 26.0, *) {
             content
                 .glassEffect(isInteractive ? .regular.interactive() : .regular, in: shape)
@@ -20,6 +22,15 @@ struct ThinkQGlassSurface: ViewModifier {
                 }
                 .contentShape(shape)
         }
+#else
+        content
+            .background(material, in: shape)
+            .overlay {
+                shape
+                    .strokeBorder(.quaternary, lineWidth: 0.5)
+            }
+            .contentShape(shape)
+#endif
     }
 }
 
