@@ -61,17 +61,36 @@ struct KeychainStore: Sendable {
     private static func currentAppAccess(label: String) -> SecAccess? {
         guard let executablePath = Bundle.main.executableURL?.path else { return nil }
 
-        var trustedApplication: SecTrustedApplication?
-        let trustedStatus = SecTrustedApplicationCreateFromPath(executablePath, &trustedApplication)
-        guard trustedStatus == errSecSuccess, let trustedApplication else { return nil }
+        var trustedApplications: [SecTrustedApplication] = []
+        for path in trustedExecutablePaths(primaryExecutablePath: executablePath) {
+            var trustedApplication: SecTrustedApplication?
+            let trustedStatus = SecTrustedApplicationCreateFromPath(path, &trustedApplication)
+            if trustedStatus == errSecSuccess, let trustedApplication {
+                trustedApplications.append(trustedApplication)
+            }
+        }
+        guard !trustedApplications.isEmpty else { return nil }
 
         var access: SecAccess?
         let accessStatus = SecAccessCreate(
             "\(label) token" as CFString,
-            [trustedApplication] as CFArray,
+            trustedApplications as CFArray,
             &access
         )
         guard accessStatus == errSecSuccess else { return nil }
         return access
+    }
+
+    private static func trustedExecutablePaths(primaryExecutablePath: String) -> [String] {
+        var paths = [primaryExecutablePath]
+        let helperPath = URL(fileURLWithPath: primaryExecutablePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Helpers/ThinkQQuickAction")
+            .path
+        if FileManager.default.isExecutableFile(atPath: helperPath) {
+            paths.append(helperPath)
+        }
+        return paths
     }
 }

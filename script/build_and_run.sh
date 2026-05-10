@@ -12,8 +12,10 @@ DIST_DIR="$ROOT_DIR/dist"
 APP_BUNDLE="$DIST_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
+APP_HELPERS="$APP_CONTENTS/Helpers"
 APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
+QUICK_ACTION_BINARY="$APP_HELPERS/ThinkQQuickAction"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
 APP_ICON="$ROOT_DIR/Assets/AppIcon.icns"
 
@@ -22,12 +24,30 @@ swift build
 BUILD_BINARY="$(swift build --show-bin-path)/$APP_NAME"
 
 rm -rf "$APP_BUNDLE"
-mkdir -p "$APP_MACOS" "$APP_RESOURCES"
+mkdir -p "$APP_MACOS" "$APP_HELPERS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
 if [[ -f "$APP_ICON" ]]; then
   cp "$APP_ICON" "$APP_RESOURCES/AppIcon.icns"
 fi
+
+xcrun swiftc \
+  -O \
+  -target "$(uname -m)-apple-macosx$MIN_SYSTEM_VERSION" \
+  -sdk "$(xcrun --sdk macosx --show-sdk-path)" \
+  "$ROOT_DIR/Sources/ThinkQQuickAction/QuickActionRunner.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Models/ThinQAPIError.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Models/ThinQJSON.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Models/ThinQModels.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Models/ThinQRegion.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Services/ControlEngine.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Services/DeviceControlCatalog.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Services/DeviceProfileParser.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Services/KeychainStore.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Services/ThinQClient.swift" \
+  "$ROOT_DIR/Sources/ThinkQ/Support/String+ThinkQDisplay.swift" \
+  -o "$QUICK_ACTION_BINARY"
+chmod +x "$QUICK_ACTION_BINARY"
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
