@@ -3,12 +3,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "ThinkQ",
+    name: "iThinkQ",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "ThinkQ", targets: ["ThinkQ"])
+        .executable(name: "iThinkQ", targets: ["IThinkQ"])
     ],
     dependencies: [
         .package(url: "https://github.com/swift-server-community/mqtt-nio.git", from: "2.13.0"),
@@ -16,17 +16,17 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "ThinkQ",
+            name: "IThinkQ",
             dependencies: [
                 .product(name: "MQTTNIO", package: "mqtt-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl")
             ],
-            path: "Sources/ThinkQ"
+            path: "Sources/iThinkQ"
         ),
         .testTarget(
-            name: "ThinkQTests",
-            dependencies: ["ThinkQ"],
-            path: "Tests/ThinkQTests",
+            name: "IThinkQTests",
+            dependencies: ["IThinkQ"],
+            path: "Tests/iThinkQTests",
             resources: [
                 .process("Fixtures")
             ]

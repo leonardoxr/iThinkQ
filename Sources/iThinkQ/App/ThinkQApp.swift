@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct ThinkQApp: App {
+struct IThinkQApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var session = ThinQSessionStore()
     @State private var customizationStore = DeviceCustomizationStore()
@@ -18,7 +18,7 @@ struct ThinkQApp: App {
     }
 
     var body: some Scene {
-        Window("ThinkQ", id: "main") {
+        Window("iThinkQ", id: "main") {
             ContentView()
                 .environment(session)
                 .environment(deviceStore)
@@ -50,10 +50,10 @@ struct ThinkQApp: App {
                 .frame(minWidth: 980, minHeight: 680)
         }
         .commands {
-            ThinkQCommands(session: session, deviceStore: deviceStore)
+            IThinkQCommands(session: session, deviceStore: deviceStore)
         }
 
-        MenuBarExtra("ThinkQ", systemImage: "app.connected.to.app.below.fill") {
+        MenuBarExtra("iThinkQ", systemImage: "app.connected.to.app.below.fill") {
             MenuBarDashboardView()
                 .environment(session)
                 .environment(deviceStore)
@@ -99,7 +99,7 @@ struct ThinkQApp: App {
 
     @MainActor
     private func handleQuickActionURL(_ url: URL) async {
-        guard url.scheme == "thinkq",
+        guard url.scheme == "ithinkq",
               url.host == "quick-action",
               url.path == "/power",
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
@@ -121,12 +121,12 @@ struct ThinkQApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        AppLog.windowing.info("ThinkQ launched")
+        AppLog.windowing.info("iThinkQ launched")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             let mode = UserDefaults.standard.string(forKey: "preferences.menuBarMode")
             let backgroundNotifications = UserDefaults.standard.bool(forKey: "preferences.backgroundNotifications")
             guard mode == ThinQSessionStore.MenuBarMode.menuBarFirst.rawValue || backgroundNotifications else { return }
-            for window in NSApp.windows where window.title == "ThinkQ" {
+            for window in NSApp.windows where window.title == "iThinkQ" {
                 window.close()
             }
             NSApp.setActivationPolicy(.accessory)
@@ -136,7 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor
     @objc func showMainWindowFromMenuBar() {
         NSApp.setActivationPolicy(.regular)
-        for window in NSApp.windows where window.canBecomeMain && window.title == "ThinkQ" {
+        for window in NSApp.windows where window.canBecomeMain && window.title == "iThinkQ" {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
@@ -159,14 +159,14 @@ enum AppModeController {
     }
 }
 
-struct ThinkQCommands: Commands {
+struct IThinkQCommands: Commands {
     let session: ThinQSessionStore
     let deviceStore: DeviceStore
 
     var body: some Commands {
         CommandGroup(after: .appInfo) {
             SettingsLink {
-                Label("ThinkQ Settings", systemImage: "gear")
+                Label("iThinkQ Settings", systemImage: "gear")
             }
         }
         CommandMenu("Devices") {

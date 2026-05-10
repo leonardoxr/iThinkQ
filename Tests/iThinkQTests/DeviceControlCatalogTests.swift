@@ -1,5 +1,5 @@
 import Testing
-@testable import ThinkQ
+@testable import IThinkQ
 
 struct DeviceControlCatalogTests {
     @Test func airConditionerCapabilitiesAreGroupedForUsefulControlOrder() {

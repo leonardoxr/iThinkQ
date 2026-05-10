@@ -1,16 +1,16 @@
-# ThinkQ
+# iThinkQ
 
 > Heavily WIP native macOS client for LG ThinQ devices.
 
 This is an experiment that i invested a bit of time in because i'm lazy and getting up to get my cellphone to turn my AC on was boring. 
 
-ThinkQ is an experimental SwiftUI macOS app for viewing and controlling LG ThinQ devices through the ThinQ Connect API. It is built as a native desktop app with a full window, menu bar dashboard, onboarding, Keychain token storage, polling, live-event groundwork, and device-specific controls for common appliance families.
+iThinkQ is an experimental SwiftUI macOS app for viewing and controlling LG ThinQ devices through the ThinQ Connect API. It is built as a native desktop app with a full window, menu bar dashboard, onboarding, Keychain token storage, polling, live-event groundwork, and device-specific controls for common appliance families.
 
 This project is not affiliated with, endorsed by, or supported by LG Electronics. ThinQ, LG, and related marks belong to their owners.
 
 ## Current Status
 
-ThinkQ is early, public, and actively changing.
+iThinkQ is early, public, and actively changing.
 
 - Works with Personal Access Token authentication.
 - Stores the token in macOS Keychain.
@@ -37,10 +37,10 @@ Screenshots are intentionally not committed yet because the UI is changing quick
 1. Open the LG ThinQ Personal Access Token portal: <https://connect-pat.lgthinq.com/tokens>
 2. Sign in with the same LG account used by your ThinQ devices.
 3. Create a Personal Access Token.
-4. Open ThinkQ and paste the token during onboarding or in Settings.
+4. Open iThinkQ and paste the token during onboarding or in Settings.
 5. Choose your country, then use **Test Token** before saving.
 
-ThinkQ stores the token in Keychain under the app bundle identifier. It does not intentionally log tokens, raw MQTT payloads, or personal device data.
+iThinkQ stores the token in Keychain under the app bundle identifier. It does not intentionally log tokens, raw MQTT payloads, or personal device data.
 
 ## Build
 
@@ -53,7 +53,7 @@ swift test
 The app bundle is written to:
 
 ```text
-dist/ThinkQ.app
+dist/iThinkQ.app
 ```
 
 To launch explicitly:

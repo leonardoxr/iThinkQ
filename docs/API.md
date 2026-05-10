@@ -1,6 +1,6 @@
 # ThinQ API Notes
 
-ThinkQ uses the ThinQ Connect API behavior documented by LG and observed in official/open SDKs.
+iThinkQ uses the ThinQ Connect API behavior documented by LG and observed in official/open SDKs.
 
 Primary references:
 

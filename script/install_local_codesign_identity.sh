@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IDENTITY_NAME="${THINKQ_LOCAL_SIGN_IDENTITY:-ThinkQ Local Development}"
+IDENTITY_NAME="${ITHINKQ_LOCAL_SIGN_IDENTITY:-iThinkQ Local Development}"
 KEYCHAIN="${HOME}/Library/Keychains/login.keychain-db"
 P12_PASSWORD="$(/usr/bin/openssl rand -hex 24)"
 
@@ -26,7 +26,7 @@ prompt = no
 
 [ req_distinguished_name ]
 CN = $IDENTITY_NAME
-O = ThinkQ
+O = iThinkQ
 
 [ codesign_ext ]
 basicConstraints = critical, CA:false
@@ -57,4 +57,4 @@ EOF
   -T /usr/bin/codesign >/dev/null
 
 echo "Installed local code-signing identity: $IDENTITY_NAME"
-echo "Future script/build_and_run.sh launches will sign ThinkQ with this stable identity."
+echo "Future script/build_and_run.sh launches will sign iThinkQ with this stable identity."

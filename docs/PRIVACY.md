@@ -1,6 +1,6 @@
 # Privacy Notes
 
-ThinkQ controls home appliances, so privacy is part of the product surface.
+iThinkQ controls home appliances, so privacy is part of the product surface.
 
 ## Stored Locally
 

@@ -42,7 +42,7 @@ struct DeviceDetailView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Waiting for LG")
                                 .font(.headline)
-                            Text("Command sent. Controls are paused until ThinkQ receives the updated device state.")
+                            Text("Command sent. Controls are paused until iThinkQ receives the updated device state.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -184,7 +184,7 @@ struct DeviceCustomizationView: View {
                 Label("Show in Shortcuts and Spotlight quick actions", systemImage: "bolt.badge.clock")
             }
             .toggleStyle(.switch)
-            .help("Allows this device to appear in ThinkQ power actions outside the main app.")
+            .help("Allows this device to appear in iThinkQ power actions outside the main app.")
         }
         .padding()
         .thinkQGlassSurface()

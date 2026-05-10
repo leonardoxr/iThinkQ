@@ -85,7 +85,7 @@ struct DeviceCacheStore {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.temporaryDirectory
         return base
-            .appendingPathComponent("ThinkQ", isDirectory: true)
+            .appendingPathComponent("iThinkQ", isDirectory: true)
             .appendingPathComponent("DeviceCache", isDirectory: true)
     }
 }

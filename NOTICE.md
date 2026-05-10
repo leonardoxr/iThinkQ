@@ -1,6 +1,6 @@
 # Notice
 
-ThinkQ is an independent open source project.
+iThinkQ is an independent open source project.
 
 LG, ThinQ, LG ThinQ, and related names or marks are trademarks of their respective owners. This repository is not affiliated with, endorsed by, sponsored by, or supported by LG Electronics.
 

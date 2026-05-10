@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ThinkQGlassSurface: ViewModifier {
+struct IThinkQGlassSurface: ViewModifier {
     var material: Material = .regularMaterial
     var cornerRadius: CGFloat = 8
     var isInteractive = false
@@ -40,6 +40,6 @@ extension View {
         cornerRadius: CGFloat = 8,
         interactive: Bool = false
     ) -> some View {
-        modifier(ThinkQGlassSurface(material: material, cornerRadius: cornerRadius, isInteractive: interactive))
+        modifier(IThinkQGlassSurface(material: material, cornerRadius: cornerRadius, isInteractive: interactive))
     }
 }

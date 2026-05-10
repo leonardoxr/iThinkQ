@@ -1,5 +1,5 @@
 import Testing
-@testable import ThinkQ
+@testable import IThinkQ
 
 struct ThinQRegionTests {
     @Test func mapsCountriesToRegions() {

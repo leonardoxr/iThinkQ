@@ -31,7 +31,7 @@ final class ThinQSessionStore {
         static let onboardingCompleted = "onboarding.completed"
     }
 
-    private let keychain = KeychainStore(service: "com.xavier.thinkq")
+    private let keychain = KeychainStore(service: "com.xavier.ithinkq")
     private let tokenAccount = "thinq-personal-access-token"
     private let defaults: UserDefaults
 

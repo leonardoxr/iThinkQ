@@ -11,7 +11,7 @@ struct MenuBarDashboardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Label("ThinkQ", systemImage: "app.connected.to.app.below.fill")
+                Label("iThinkQ", systemImage: "app.connected.to.app.below.fill")
                     .font(.headline)
                 Spacer()
                 Button {
@@ -37,7 +37,7 @@ struct MenuBarDashboardView: View {
                     Button {
                         openFullWindow()
                     } label: {
-                        Label("Set Up ThinkQ", systemImage: "key")
+                        Label("Set Up iThinkQ", systemImage: "key")
                     }
                 }
             }
@@ -80,7 +80,7 @@ struct MenuBarDashboardView: View {
             Button(role: .destructive) {
                 NSApp.terminate(nil)
             } label: {
-                Label("Quit ThinkQ", systemImage: "power")
+                Label("Quit iThinkQ", systemImage: "power")
             }
         }
         .padding(14)

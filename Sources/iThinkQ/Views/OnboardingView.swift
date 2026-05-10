@@ -32,7 +32,7 @@ struct OnboardingView: View {
                 stepCard(
                     number: "2",
                     title: "Paste it here",
-                    text: "ThinkQ stores the token in macOS Keychain and uses it only for ThinQ API requests."
+                    text: "iThinkQ stores the token in macOS Keychain and uses it only for ThinQ API requests."
                 ) {
                     SecureField("Personal Access Token", text: $tokenDraft)
                         .textFieldStyle(.roundedBorder)
@@ -60,7 +60,7 @@ struct OnboardingView: View {
                     Button {
                         Task { await saveAndContinue() }
                     } label: {
-                        Label("Set Up ThinkQ", systemImage: "checkmark.circle")
+                        Label("Set Up iThinkQ", systemImage: "checkmark.circle")
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(trimmedToken.isEmpty || isTesting)
@@ -93,7 +93,7 @@ struct OnboardingView: View {
                 .thinkQGlassSurface()
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("Set Up ThinkQ")
+                Text("Set Up iThinkQ")
                     .font(.largeTitle.bold())
                 Text("Connect your LG ThinQ account with a Personal Access Token.")
                     .font(.title3)

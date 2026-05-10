@@ -10,7 +10,7 @@ struct CapabilityGridView: View {
                 .font(.title2.bold())
             let actionableCapabilities = DeviceControlCatalog.actionableCapabilities(capabilities, for: device.type)
             if actionableCapabilities.isEmpty {
-                ContentUnavailableView("No Available Controls", systemImage: "lock", description: Text("This device has not shared configurable controls that ThinkQ can send safely."))
+                ContentUnavailableView("No Available Controls", systemImage: "lock", description: Text("This device has not shared configurable controls that iThinkQ can send safely."))
                     .frame(minHeight: 160)
             } else if device.type == .airConditioner {
                 AirConditionerControlView(device: device, capabilities: actionableCapabilities)

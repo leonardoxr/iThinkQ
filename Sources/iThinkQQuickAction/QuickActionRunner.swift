@@ -12,7 +12,7 @@ struct QuickActionRunner {
                 try await runner.setPower(deviceID: arguments.deviceID, on: arguments.state == "on")
             }
         } catch {
-            fputs("ThinkQ quick action failed: \(error.localizedDescription)\n", stderr)
+            fputs("iThinkQ quick action failed: \(error.localizedDescription)\n", stderr)
             exit(1)
         }
     }
@@ -55,8 +55,8 @@ private struct Arguments {
 }
 
 private struct HeadlessPowerRunner {
-    private let defaults = UserDefaults(suiteName: "com.xavier.thinkq") ?? .standard
-    private let keychain = KeychainStore(service: "com.xavier.thinkq")
+    private let defaults = UserDefaults(suiteName: "com.xavier.ithinkq") ?? .standard
+    private let keychain = KeychainStore(service: "com.xavier.ithinkq")
     private let tokenAccount = "thinq-personal-access-token"
 
     func checkToken() throws {

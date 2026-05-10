@@ -1,6 +1,6 @@
-# Contributing To ThinkQ
+# Contributing To iThinkQ
 
-ThinkQ is heavily WIP, so small, well-scoped contributions are easiest to review.
+iThinkQ is heavily WIP, so small, well-scoped contributions are easiest to review.
 
 ## Good First Contributions
 

@@ -62,7 +62,7 @@ struct SettingsView: View {
                         }
                     }
                 Toggle("Keep notifications alive at login", isOn: backgroundNotificationsBinding)
-                Text("Starts ThinkQ at login so the menu bar app can keep the ThinQ MQTT stream connected. Notifications cannot arrive when no ThinkQ process is running.")
+                Text("Starts iThinkQ at login so the menu bar app can keep the ThinQ MQTT stream connected. Notifications cannot arrive when no iThinkQ process is running.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 if let error = launchAtLoginService.lastError {
@@ -174,7 +174,7 @@ struct SettingsView: View {
             }
 
             Section("Privacy") {
-                Text("ThinkQ stores your token in Keychain and does not write tokens or raw personal device data to logs.")
+                Text("iThinkQ stores your token in Keychain and does not write tokens or raw personal device data to logs.")
                     .foregroundStyle(.secondary)
                 Button {
                     copySanitizedDiagnostics()

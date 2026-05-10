@@ -229,7 +229,7 @@ final class DeviceStore {
         }
 
         var lines: [String] = [
-            "ThinkQ Diagnostics",
+            "iThinkQ Diagnostics",
             "Generated: \(Date().formatted(date: .abbreviated, time: .standard))",
             "Country: \(session.country.rawValue)",
             "Region: \(session.region.rawValue)",
@@ -578,7 +578,7 @@ final class DeviceStore {
         if let rateLimitedUntil {
             "LG API limit reached. Paused until \(rateLimitedUntil.formatted(date: .omitted, time: .shortened))."
         } else {
-            "LG API limit reached. ThinkQ paused requests."
+            "LG API limit reached. iThinkQ paused requests."
         }
     }
 

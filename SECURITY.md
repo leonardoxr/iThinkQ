@@ -1,6 +1,6 @@
 # Security Policy
 
-ThinkQ is experimental and heavily WIP. Please treat security and privacy reports seriously, but expect fast-moving internals while the app stabilizes.
+iThinkQ is experimental and heavily WIP. Please treat security and privacy reports seriously, but expect fast-moving internals while the app stabilizes.
 
 ## Supported Versions
 
@@ -14,7 +14,7 @@ Use a private GitHub security advisory if available, or contact the repository m
 
 ## Sensitive Data Handling
 
-ThinkQ is designed to:
+iThinkQ is designed to:
 
 - Store ThinQ Personal Access Tokens in macOS Keychain.
 - Avoid logging tokens and raw personal device payloads.

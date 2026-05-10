@@ -402,12 +402,12 @@ struct AirConditionerControlView: View {
         case "Fan":
             "This profile did not expose fan speed or pattern controls."
         default:
-            "ThinkQ will show it here when LG exposes a writable capability."
+            "iThinkQ will show it here when LG exposes a writable capability."
         }
     }
 
     private var commandPreview: String {
-        guard let commandDraft else { return "ThinkQ will send this command." }
+        guard let commandDraft else { return "iThinkQ will send this command." }
         return "\(device.displayName) will set \(commandDraft.title.lowercased()) to \(commandDraft.value.displayText.thinkQTitleCasedValue)."
     }
 }

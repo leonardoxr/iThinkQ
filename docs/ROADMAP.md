@@ -1,6 +1,6 @@
 # Roadmap
 
-ThinkQ is heavily WIP. This roadmap is intentionally practical and may change as real-device behavior is discovered.
+iThinkQ is heavily WIP. This roadmap is intentionally practical and may change as real-device behavior is discovered.
 
 ## Near Term
 

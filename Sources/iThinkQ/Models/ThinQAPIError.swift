@@ -13,10 +13,10 @@ enum ThinQAPIError: LocalizedError, Equatable, Sendable {
         switch self {
         case .missingToken: "Add a ThinQ Personal Access Token in Settings."
         case .unsupportedCountry: "This country is not supported by ThinQ Connect."
-        case .invalidURL: "ThinkQ could not build the ThinQ API URL."
+        case .invalidURL: "iThinkQ could not build the ThinQ API URL."
         case .httpStatus(let status): "ThinQ returned HTTP \(status)."
         case .api(let code, let message): "ThinQ \(code): \(message)"
-        case .decoding(let detail): "ThinkQ could not read the ThinQ response: \(detail)"
+        case .decoding(let detail): "iThinkQ could not read the ThinQ response: \(detail)"
         case .unsupportedControl(let detail): detail
         }
     }
@@ -33,6 +33,6 @@ enum ThinQAPIError: LocalizedError, Equatable, Sendable {
     }
 
     var userFacingMessage: String {
-        isRateLimit ? "LG ThinQ API limit reached. ThinkQ will pause requests for a while." : (errorDescription ?? "Unknown ThinQ error.")
+        isRateLimit ? "LG ThinQ API limit reached. iThinkQ will pause requests for a while." : (errorDescription ?? "Unknown ThinQ error.")
     }
 }

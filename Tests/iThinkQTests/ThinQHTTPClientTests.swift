@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import ThinkQ
+@testable import IThinkQ
 
 struct ThinQHTTPClientTests {
     @Test func messageIDIsURLSafeBase64WithoutPadding() {

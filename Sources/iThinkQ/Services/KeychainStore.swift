@@ -86,7 +86,7 @@ struct KeychainStore: Sendable {
         let helperPath = URL(fileURLWithPath: primaryExecutablePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-            .appendingPathComponent("Helpers/ThinkQQuickAction")
+            .appendingPathComponent("Helpers/iThinkQQuickAction")
             .path
         if FileManager.default.isExecutableFile(atPath: helperPath) {
             paths.append(helperPath)

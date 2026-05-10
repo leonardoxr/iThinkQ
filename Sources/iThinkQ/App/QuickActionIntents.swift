@@ -16,7 +16,7 @@ struct QuickActionDeviceEntity: AppEntity, Identifiable {
     let id: String
     let name: String
 
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "ThinkQ Device")
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "iThinkQ Device")
     static let defaultQuery = QuickActionDeviceQuery()
 
     var displayRepresentation: DisplayRepresentation {
@@ -56,8 +56,8 @@ struct QuickActionDeviceQuery: EntityStringQuery {
 }
 
 struct SetQuickActionDevicePowerIntent: AppIntent {
-    static let title: LocalizedStringResource = "Set ThinkQ Device Power"
-    static let description = IntentDescription("Turn an opted-in ThinkQ device on or off.")
+    static let title: LocalizedStringResource = "Set iThinkQ Device Power"
+    static let description = IntentDescription("Turn an opted-in iThinkQ device on or off.")
     static let openAppWhenRun = false
 
     @Parameter(title: "Device")
@@ -77,19 +77,19 @@ struct SetQuickActionDevicePowerIntent: AppIntent {
         }
 
         guard let targetDevice = deviceStore.quickActionDevices.first(where: { $0.id == device.id }) else {
-            return .result(dialog: "This device is not enabled for ThinkQ quick actions.")
+            return .result(dialog: "This device is not enabled for iThinkQ quick actions.")
         }
 
         await deviceStore.setPower(powerState == .on, for: targetDevice, session: session)
         if let error = deviceStore.lastControlError {
-            return .result(dialog: "ThinkQ could not update \(targetDevice.displayName): \(error)")
+            return .result(dialog: "iThinkQ could not update \(targetDevice.displayName): \(error)")
         }
 
         return .result(dialog: "\(targetDevice.displayName) turned \(powerState.rawValue).")
     }
 }
 
-struct ThinkQShortcuts: AppShortcutsProvider {
+struct IThinkQShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: SetQuickActionDevicePowerIntent(),

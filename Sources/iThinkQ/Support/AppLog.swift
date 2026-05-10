@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 
 enum AppLog {
-    static let subsystem = Bundle.main.bundleIdentifier ?? "com.xavier.thinkq"
+    static let subsystem = Bundle.main.bundleIdentifier ?? "com.xavier.ithinkq"
 
     static let auth = Logger(subsystem: subsystem, category: "Auth")
     static let sync = Logger(subsystem: subsystem, category: "Sync")

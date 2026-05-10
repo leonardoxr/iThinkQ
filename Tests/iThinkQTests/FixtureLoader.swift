@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import ThinkQ
+@testable import IThinkQ
 
 enum FixtureLoader {
     static func jsonObject(_ name: String) throws -> [String: ThinQJSON] {

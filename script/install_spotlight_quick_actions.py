@@ -6,8 +6,8 @@ import re
 import shutil
 import subprocess
 
-APP_PATH = pathlib.Path("/Applications/ThinkQ.app")
-RUNNER = APP_PATH / "Contents/Helpers/ThinkQQuickAction"
+APP_PATH = pathlib.Path("/Applications/iThinkQ.app")
+RUNNER = APP_PATH / "Contents/Helpers/iThinkQQuickAction"
 DESTINATION = pathlib.Path("/Applications")
 
 
@@ -19,7 +19,7 @@ def main() -> None:
     if not RUNNER.exists():
         raise SystemExit(f"Missing quick-action runner: {RUNNER}")
 
-    exported = subprocess.check_output(["defaults", "export", "com.xavier.thinkq", "-"])
+    exported = subprocess.check_output(["defaults", "export", "com.xavier.ithinkq", "-"])
     preferences = plistlib.loads(exported)
     raw = preferences.get("device.customizations")
     customizations = json.loads(raw.decode()) if raw else {}
@@ -28,8 +28,8 @@ def main() -> None:
     for device_id, customization in customizations.items():
         if not customization.get("quickActionsEnabled"):
             continue
-        name = customization.get("alias") or "ThinkQ Device"
-        safe_name = re.sub(r"[:/\\]+", "-", name).strip() or "ThinkQ Device"
+        name = customization.get("alias") or "iThinkQ Device"
+        safe_name = re.sub(r"[:/\\]+", "-", name).strip() or "iThinkQ Device"
         for state, verb in (("on", "Turn On"), ("off", "Turn Off")):
             app_path = DESTINATION / f"{verb} {safe_name}.app"
             command = " ".join([
