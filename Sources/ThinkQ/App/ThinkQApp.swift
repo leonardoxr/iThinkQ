@@ -44,6 +44,9 @@ struct ThinkQApp: App {
                 .onChange(of: session.menuBarMode) { _, newMode in
                     AppModeController.apply(newMode)
                 }
+                .onOpenURL { url in
+                    Task { await handleQuickActionURL(url) }
+                }
                 .frame(minWidth: 980, minHeight: 680)
         }
         .commands {
@@ -63,6 +66,9 @@ struct ThinkQApp: App {
                         await deviceStore.refresh(session: session)
                     }
                     await connectLiveEventsIfPossible()
+                }
+                .onOpenURL { url in
+                    Task { await handleQuickActionURL(url) }
                 }
         }
         .menuBarExtraStyle(.window)
@@ -89,6 +95,27 @@ struct ThinkQApp: App {
                 await notificationService.deliver(message: message, devices: deviceStore.devices, enabled: session.notificationsEnabled)
             }
         }
+    }
+
+    @MainActor
+    private func handleQuickActionURL(_ url: URL) async {
+        guard url.scheme == "thinkq",
+              url.host == "quick-action",
+              url.path == "/power",
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let deviceID = components.queryItems?.first(where: { $0.name == "device" })?.value,
+              let state = components.queryItems?.first(where: { $0.name == "state" })?.value
+        else { return }
+
+        deviceStore.loadCachedData(session: session)
+        if deviceStore.devices.isEmpty || deviceStore.profiles[deviceID] == nil || deviceStore.statuses[deviceID] == nil {
+            await deviceStore.refresh(session: session)
+        }
+        guard let device = deviceStore.quickActionDevices.first(where: { $0.id == deviceID }) else {
+            AppLog.control.error("Rejected quick action for a device that is not enabled")
+            return
+        }
+        await deviceStore.setPower(state == "on", for: device, session: session)
     }
 }
 
