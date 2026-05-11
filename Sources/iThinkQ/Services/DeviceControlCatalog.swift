@@ -90,7 +90,16 @@ enum DeviceControlCatalog {
         if id.contains("rotateupdown") {
             return "Swing"
         }
+        if id.contains("leftright") || id.contains("left.right") {
+            return "Horizontal swing"
+        }
+        if id.contains("updown") || id.contains("up.down") {
+            return "Vertical swing"
+        }
         if id.contains("paletterotation") || id.contains("pallete") || id.contains("palette") || id.contains("vane") {
+            return "Vane position"
+        }
+        if id.contains("windangle") || id.contains("louver") || id.contains("flap") {
             return "Vane position"
         }
         if id.contains("display.light") || id.hasSuffix(".light") {
@@ -143,14 +152,7 @@ enum DeviceControlCatalog {
         if token.contains("temperature") || token.contains("targettemperature") {
             return .temperature
         }
-        if token.contains("rotate")
-            || token.contains("direction")
-            || token.contains("swing")
-            || token.contains("vane")
-            || token.contains("palette")
-            || token.contains("pallete")
-            || token.contains("vertical")
-            || token.contains("horizontal") {
+        if isDirectionToken(token) {
             return .direction
         }
         if token.contains("wind") || token.contains("airflow") || token.contains("fan") {
@@ -230,6 +232,27 @@ enum DeviceControlCatalog {
 
     private static func capabilitySort(_ lhs: DeviceCapability, _ rhs: DeviceCapability) -> Bool {
         score(lhs) == score(rhs) ? lhs.displayName < rhs.displayName : score(lhs) < score(rhs)
+    }
+
+    private static func isDirectionToken(_ token: String) -> Bool {
+        token.contains("rotate")
+            || token.contains("direction")
+            || token.contains("swing")
+            || token.contains("vane")
+            || token.contains("palette")
+            || token.contains("pallete")
+            || token.contains("vertical")
+            || token.contains("horizontal")
+            || token.contains("updown")
+            || token.contains("up.down")
+            || token.contains("up down")
+            || token.contains("leftright")
+            || token.contains("left.right")
+            || token.contains("left right")
+            || token.contains("windangle")
+            || token.contains("wind angle")
+            || token.contains("louver")
+            || token.contains("flap")
     }
 
     private static func temperatureScore(_ capability: DeviceCapability, currentMode: String?) -> Int {
