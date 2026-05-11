@@ -73,8 +73,17 @@ struct AirConditionerControlView: View {
             AirControlCard(title: "Air Direction", subtitle: "Move the air vane automatically or set its position.", symbol: "arrow.up.and.down") {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(directionCapabilities) { capability in
-                        LabeledControlRow(title: DeviceControlCatalog.friendlyTitle(for: capability, role: .direction)) {
+                        if isVerticalSwingCapability(capability) {
+                            VerticalAirDirectionControl(
+                                isCircularSwingOn: boolSelections[capability.id] ?? false,
+                                preview: { newValue in
+                                    preview(capability, value: .bool(newValue), title: DeviceControlCatalog.friendlyTitle(for: capability, role: .direction), highRisk: false)
+                                }
+                            )
+                        } else {
+                            LabeledControlRow(title: DeviceControlCatalog.friendlyTitle(for: capability, role: .direction)) {
                             directionControl(for: capability)
+                            }
                         }
                     }
                 }
@@ -195,8 +204,19 @@ struct AirConditionerControlView: View {
 
     @ViewBuilder
     private var fanCard: some View {
-        let fanCapabilities = capabilities
+        let allFanCapabilities = capabilities
             .filter { DeviceControlCatalog.role(for: $0, deviceType: device.type) == .fan && $0.kind == .enumeration }
+
+        let hasFanSpeed = allFanCapabilities.contains { capability in
+            let id = capability.id.lowercased()
+            return id.contains("windstrength") && !id.contains("windstrengthdetail")
+        }
+
+        let fanCapabilities = allFanCapabilities
+            .filter { capability in
+                let id = capability.id.lowercased()
+                return !(hasFanSpeed && id.contains("windstrengthdetail"))
+            }
             .sorted { lhs, rhs in
                 DeviceControlCatalog.friendlyTitle(for: lhs, role: .fan) < DeviceControlCatalog.friendlyTitle(for: rhs, role: .fan)
             }
@@ -323,7 +343,7 @@ struct AirConditionerControlView: View {
 
         for capability in capabilities where capability.kind == .bool {
             let current = deviceStore.statuses[device.id]?.values[capability.id]
-            if case .bool(let value)? = current {
+            if let value = Self.boolValue(from: current) {
                 boolSelections[capability.id] = value
             } else {
                 boolSelections[capability.id] = false
@@ -388,11 +408,36 @@ struct AirConditionerControlView: View {
         value.rounded() == value ? "\(Int(value))" : String(format: "%.1f", value)
     }
 
+    private static func boolValue(from value: ThinQJSON?) -> Bool? {
+        switch value {
+        case .bool(let bool):
+            bool
+        case .string(let string):
+            switch string.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
+            case "TRUE", "ON", "ENABLE", "ENABLED", "1":
+                true
+            case "FALSE", "OFF", "DISABLE", "DISABLED", "0":
+                false
+            default:
+                nil
+            }
+        case .number(let number):
+            number != 0
+        default:
+            nil
+        }
+    }
+
     private func directionSortScore(_ capability: DeviceCapability) -> Int {
         let id = capability.id.lowercased()
         if id.contains("rotate") || id.contains("swing") { return 0 }
         if id.contains("palette") || id.contains("pallete") || id.contains("vane") { return 1 }
         return 2
+    }
+
+    private func isVerticalSwingCapability(_ capability: DeviceCapability) -> Bool {
+        let id = capability.id.lowercased()
+        return capability.kind == .bool && id.contains("winddirection") && id.contains("rotateupdown")
     }
 
     private func unavailableHint(for title: String) -> String {
@@ -457,6 +502,98 @@ private struct AirControlCard<Content: View>: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .thinkQGlassSurface(interactive: true)
+    }
+}
+
+private struct VerticalAirDirectionControl: View {
+    let isCircularSwingOn: Bool
+    let preview: (Bool) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 14) {
+                AirVaneGraphic(isActive: isCircularSwingOn)
+                    .frame(width: 126, height: 76)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Label(isCircularSwingOn ? "Swinging" : "Fixed", systemImage: isCircularSwingOn ? "arrow.up.arrow.down.circle.fill" : "pause.circle")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(isCircularSwingOn ? .cyan : .secondary)
+                    Text("Manual vane nudges are only visible in LG ThinQ right now.")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(minHeight: 82, alignment: .leading)
+
+            Divider()
+
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Circular swing")
+                        .font(.callout.weight(.semibold))
+                    Text(isCircularSwingOn ? "Moving from top to bottom" : "Fixed vertical airflow")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 10)
+
+                Button {
+                    preview(!isCircularSwingOn)
+                } label: {
+                    Label(isCircularSwingOn ? "Stop" : "Start", systemImage: isCircularSwingOn ? "pause.circle" : "arrow.up.arrow.down.circle")
+                }
+                .controlSize(.large)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct AirVaneGraphic: View {
+    let isActive: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            let origin = CGPoint(x: width * 0.66, y: height * 0.26)
+            let endpoints = [
+                CGPoint(x: width * 0.20, y: height * 0.26),
+                CGPoint(x: width * 0.25, y: height * 0.44),
+                CGPoint(x: width * 0.31, y: height * 0.62),
+                CGPoint(x: width * 0.43, y: height * 0.76),
+                CGPoint(x: width * 0.58, y: height * 0.84)
+            ]
+
+            ZStack {
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.18, y: height * 0.14))
+                    path.addLine(to: CGPoint(x: width * 0.62, y: height * 0.14))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.70, y: height * 0.30),
+                        control: CGPoint(x: width * 0.62, y: height * 0.30)
+                    )
+                    path.addLine(to: CGPoint(x: width * 0.79, y: height * 0.30))
+                    path.addLine(to: CGPoint(x: width * 0.79, y: height * 0.86))
+                }
+                .stroke(.secondary.opacity(0.75), style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
+
+                ForEach(Array(endpoints.enumerated()), id: \.offset) { index, point in
+                    Path { path in
+                        path.move(to: origin)
+                        path.addLine(to: point)
+                    }
+                    .stroke(
+                        isActive ? Color.cyan.opacity(0.9 - Double(index) * 0.08) : Color.secondary.opacity(0.45),
+                        style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                    )
+                }
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 

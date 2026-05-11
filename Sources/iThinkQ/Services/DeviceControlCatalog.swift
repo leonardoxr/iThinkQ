@@ -87,6 +87,9 @@ enum DeviceControlCatalog {
         if id.contains("windstrength") {
             return "Fan speed"
         }
+        if id.contains("winddirection") && id.contains("rotateupdown") {
+            return "Vertical swing"
+        }
         if id.contains("rotateupdown") {
             return "Swing"
         }
@@ -236,6 +239,7 @@ enum DeviceControlCatalog {
 
     private static func isDirectionToken(_ token: String) -> Bool {
         token.contains("rotate")
+            || token.contains("winddirection")
             || token.contains("direction")
             || token.contains("swing")
             || token.contains("vane")
