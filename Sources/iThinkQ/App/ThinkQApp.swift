@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 @main
@@ -121,6 +122,9 @@ struct IThinkQApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if handleUninstallCleanupArgument() {
+            return
+        }
         AppLog.windowing.info("iThinkQ launched")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             let mode = UserDefaults.standard.string(forKey: "preferences.menuBarMode")
@@ -142,6 +146,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func handleUninstallCleanupArgument() -> Bool {
+        guard CommandLine.arguments.contains("--unregister-login-item") else {
+            return false
+        }
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            AppLog.windowing.error("Uninstall login item cleanup failed: \(error.localizedDescription, privacy: .public)")
+        }
+        DispatchQueue.main.async {
+            NSApp.terminate(nil)
+        }
+        return true
     }
 }
 

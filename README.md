@@ -70,6 +70,14 @@ To launch explicitly:
 
 This creates a zip under `dist/` from the locally built app bundle. Public releases are currently marked as prerelease/WIP and are not notarized.
 
+## Uninstall
+
+Deleting `iThinkQ.app` from Finder removes the app bundle only. To also remove generated Spotlight quick-action apps, login item registration, preferences, cache, Application Support data, and the Keychain token, run:
+
+```sh
+./script/uninstall.sh
+```
+
 ## Architecture
 
 - `App/` app entry point, scenes, commands, menu bar setup
