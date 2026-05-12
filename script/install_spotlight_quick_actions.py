@@ -8,11 +8,27 @@ import subprocess
 
 APP_PATH = pathlib.Path("/Applications/iThinkQ.app")
 RUNNER = APP_PATH / "Contents/Helpers/iThinkQQuickAction"
+OLD_RUNNERS = (
+    "/Applications/ThinkQ.app/Contents/Helpers/ThinkQQuickAction",
+    "/Applications/IThinkQ.app/Contents/Helpers/IThinkQQuickAction",
+)
 DESTINATION = pathlib.Path("/Applications")
 
 
 def shell_quote(value: str) -> str:
     return "'" + value.replace("'", "'\\''") + "'"
+
+
+def remove_existing_quick_action_apps() -> None:
+    runner_markers = (str(RUNNER), *OLD_RUNNERS)
+    for app_path in DESTINATION.glob("Turn O*.app"):
+        try:
+            script = subprocess.check_output(["osadecompile", str(app_path)], text=True, stderr=subprocess.DEVNULL)
+        except subprocess.SubprocessError:
+            continue
+        if any(marker in script for marker in runner_markers):
+            shutil.rmtree(app_path)
+            subprocess.run(["mdimport", str(DESTINATION)], check=False)
 
 
 def main() -> None:
@@ -25,6 +41,7 @@ def main() -> None:
     customizations = json.loads(raw.decode()) if raw else {}
 
     created = []
+    remove_existing_quick_action_apps()
     for device_id, customization in customizations.items():
         if not customization.get("quickActionsEnabled"):
             continue
